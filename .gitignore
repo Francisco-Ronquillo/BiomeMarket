@@ -1,0 +1,12 @@
+# Ignorar entorno virtual
+venv/
+ent/
+env/
+.venv/
+.idea
+.env
+# Otros comunes que podrías querer ignorar:
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
