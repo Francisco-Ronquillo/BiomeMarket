@@ -1,0 +1,297 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.signup-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sección Izquierda */
+.signup-left {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(56, 142, 60, 0.9)),
+                url('farm-background.jpg') center/cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    position: relative;
+}
+
+.overlay {
+    text-align: center;
+    padding: 2rem;
+    max-width: 500px;
+}
+
+.overlay img {
+    height: 50px;  /* Reducido para que no ocupe tanto espacio */
+    margin-bottom: 1.5rem;
+    filter: brightness(0) invert(1);
+}
+
+.signup-left h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.signup-left p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.benefits {
+    list-style: none;
+    text-align: left;
+    margin: 2rem auto;
+    max-width: 300px;
+}
+
+.benefits li {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    padding-left: 0.5rem;
+}
+
+.login-text {
+    margin-top: 3rem;
+    font-size: 1rem;
+}
+
+.login-text a {
+    color: white;
+    font-weight: 600;
+    text-decoration: underline;
+    transition: opacity 0.3s;
+}
+
+.login-text a:hover {
+    opacity: 0.8;
+}
+
+/* Sección Derecha - CORREGIDO PARA SCROLL */
+.signup-right {
+    flex: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    overflow-y: auto;  /* Permitir scroll */
+    max-height: 100vh;  /* Asegurar altura máxima */
+    padding: 3rem 1rem;  /* Aumentado el padding vertical */
+}
+
+.form-container {
+    background: white;
+    padding: 3rem 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 550px;
+    margin: auto;  /* Centrado */
+}
+
+.form-container h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+/* Tipo de Usuario */
+.user-type {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.radio-option {
+    flex: 1;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+    display: none;
+}
+
+.radio-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.2rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    transition: all 0.3s;
+    background: white;
+}
+
+.radio-option input[type="radio"]:checked + .radio-label {
+    border-color: #4CAF50;
+    background: #f1f8f4;
+}
+
+.radio-label .icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.radio-label span:last-child {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #4CAF50;
+    background: #f9fff9;
+}
+
+.form-group input::placeholder {
+    color: #aaa;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Checkbox */
+.form-check {
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.form-check input[type="checkbox"] {
+    margin-top: 0.3rem;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.form-check label {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.form-check a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.form-check a:hover {
+    text-decoration: underline;
+}
+
+/* Botón Principal */
+.btn-signup {
+    width: 100%;
+    padding: 1rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1rem;
+}
+
+.btn-signup:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+/* Campos de Productor */
+#producerFields {
+    border-top: 2px solid #e0e0e0;
+    padding-top: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .signup-container {
+        flex-direction: column;
+    }
+
+    .signup-left {
+        display: none;
+    }
+
+    .signup-right {
+        flex: 1;
+        padding: 2rem 1rem;
+    }
+
+    .form-container {
+        padding: 2rem 1.5rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .signup-right {
+        padding: 1.5rem 1rem;
+    }
+
+    .form-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .form-container h1 {
+        font-size: 1.5rem;
+    }
+}

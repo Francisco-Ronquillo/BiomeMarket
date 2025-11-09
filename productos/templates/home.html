@@ -1,10 +1,267 @@
-<!DOCTYPE html>
-<html lang="en">
+{% load static %}
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiomeMarket</title>
+     <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Navegación -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                 <img src="{% static 'img/logo.png' %}" alt="Mi imagen">
+            </div>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#productos">Productos</a></li>
+                <li><a href="#categorias">Categorías</a></li>
+                <li><a href="#nosotros">Nosotros</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+            <div class="nav-icons">
+                <a href="#buscar" class="icon">🔍</a>
+                <a href="{% url 'productos:carrito' %}" class="icon">🛒</a>
+                <a href="{% url 'accounts:signin' %}" class="btn-login">Iniciar Sesion</a>
+                <a href="{% url 'accounts:signup' %}" class="btn-login">Registrarse</a>
+            </div>
+        </div>
+    </nav>
 
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Productos Agrícolas Frescos<br>Directo del Campo</h1>
+            <p>Conectamos productores locales con tu mesa</p>
+            <div class="hero-buttons">
+                <a href="#productos" class="btn btn-primary">Explorar Productos</a>
+                <a href="#ofertas" class="btn btn-secondary">Ver Ofertas</a>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Buscar productos agrícolas...">
+                <button>Buscar</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categorías -->
+    <section class="categorias" id="categorias">
+        <div class="container">
+            <h2>Categorías Principales</h2>
+            <div class="categoria-grid">
+                <div class="categoria-card">
+                    <img src="frutas.jpg" alt="Frutas">
+                    <h3>Frutas</h3>
+                </div>
+                <div class="categoria-card">
+                    <img src="verduras.jpg" alt="Verduras">
+                    <h3>Verduras</h3>
+                </div>
+                <div class="categoria-card">
+                    <img src="granos.jpg" alt="Granos">
+                    <h3>Granos</h3>
+                </div>
+                <div class="categoria-card">
+                    <img src="organicos.jpg" alt="Orgánicos">
+                    <h3>Orgánicos</h3>
+                </div>
+                <div class="categoria-card">
+                    <img src="lacteos.jpg" alt="Lácteos">
+                    <h3>Lácteos</h3>
+                </div>
+                <div class="categoria-card">
+                    <img src="carnes.jpg" alt="Carnes">
+                    <h3>Carnes</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Productos Destacados -->
+    <section class="productos" id="productos">
+        <div class="container">
+            <h2>Productos Destacados</h2>
+            <div class="producto-grid">
+                <div class="producto-card">
+                    <div class="badge">Orgánico</div>
+                    <img src="producto1.jpg" alt="Producto 1">
+                    <h3>Tomate Cherry Orgánico</h3>
+                    <div class="rating">⭐⭐⭐⭐⭐</div>
+                    <p class="price">$3.50/kg</p>
+                    <button class="btn-add-cart">Agregar al Carrito</button>
+                </div>
+                <div class="producto-card">
+                    <div class="badge oferta">Oferta</div>
+                    <img src="producto2.jpg" alt="Producto 2">
+                    <h3>Aguacate Hass</h3>
+                    <div class="rating">⭐⭐⭐⭐</div>
+                    <p class="price">$2.80/lb</p>
+                    <button class="btn-add-cart">Agregar al Carrito</button>
+                </div>
+                <div class="producto-card">
+                    <img src="producto3.jpg" alt="Producto 3">
+                    <h3>Lechuga Hidropónica</h3>
+                    <div class="rating">⭐⭐⭐⭐⭐</div>
+                    <p class="price">$1.50/unidad</p>
+                    <button class="btn-add-cart">Agregar al Carrito</button>
+                </div>
+                <div class="producto-card">
+                    <div class="badge">Recién Cosechado</div>
+                    <img src="producto4.jpg" alt="Producto 4">
+                    <h3>Maíz Dulce</h3>
+                    <div class="rating">⭐⭐⭐⭐</div>
+                    <p class="price">$4.00/docena</p>
+                    <button class="btn-add-cart">Agregar al Carrito</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Beneficios -->
+    <section class="beneficios">
+        <div class="container">
+            <div class="beneficio-grid">
+                <div class="beneficio-item">
+                    <div class="icon">🌱</div>
+                    <h3>Directo del Productor</h3>
+                    <p>Sin intermediarios, apoyando a agricultores locales</p>
+                </div>
+                <div class="beneficio-item">
+                    <div class="icon">✅</div>
+                    <h3>Productos Frescos</h3>
+                    <p>Calidad garantizada y máxima frescura</p>
+                </div>
+                <div class="beneficio-item">
+                    <div class="icon">🚚</div>
+                    <h3>Envío a Domicilio</h3>
+                    <p>Entrega rápida y segura en tu hogar</p>
+                </div>
+                <div class="beneficio-item">
+                    <div class="icon">🏆</div>
+                    <h3>Certificaciones</h3>
+                    <p>Productos con certificación orgánica</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cómo Funciona -->
+    <section class="como-funciona">
+        <div class="container">
+            <h2>¿Cómo Funciona?</h2>
+            <div class="pasos-grid">
+                <div class="paso">
+                    <div class="numero">1</div>
+                    <h3>Explora</h3>
+                    <p>Navega por nuestro catálogo de productos frescos</p>
+                </div>
+                <div class="paso">
+                    <div class="numero">2</div>
+                    <h3>Selecciona</h3>
+                    <p>Agrega tus productos favoritos al carrito</p>
+                </div>
+                <div class="paso">
+                    <div class="numero">3</div>
+                    <h3>Compra</h3>
+                    <p>Realiza tu pedido de forma segura</p>
+                </div>
+                <div class="paso">
+                    <div class="numero">4</div>
+                    <h3>Recibe</h3>
+                    <p>Disfruta de productos frescos en tu puerta</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonios -->
+    <section class="testimonios">
+        <div class="container">
+            <h2>Lo Que Dicen Nuestros Clientes</h2>
+            <div class="testimonio-grid">
+                <div class="testimonio-card">
+                    <p>"Excelente calidad y frescura. Los productos llegan directamente del campo."</p>
+                    <div class="cliente">
+                        <strong>María González</strong>
+                        <span>⭐⭐⭐⭐⭐</span>
+                    </div>
+                </div>
+                <div class="testimonio-card">
+                    <p>"Me encanta poder apoyar a los productores locales. Productos de primera."</p>
+                    <div class="cliente">
+                        <strong>Carlos Pérez</strong>
+                        <span>⭐⭐⭐⭐⭐</span>
+                    </div>
+                </div>
+                <div class="testimonio-card">
+                    <p>"La mejor plataforma para comprar productos agrícolas frescos y orgánicos."</p>
+                    <div class="cliente">
+                        <strong>Ana Rodríguez</strong>
+                        <span>⭐⭐⭐⭐⭐</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <h2>Suscríbete a Nuestro Boletín</h2>
+            <p>Recibe ofertas exclusivas y actualizaciones de productos</p>
+            <form class="newsletter-form">
+                <input type="email" placeholder="Tu correo electrónico">
+                <button type="submit" class="btn btn-primary">Suscribirse</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>biomeMarket</h4>
+                    <p>Conectando el campo con tu mesa</p>
+                    <div class="social-links">
+                        <a href="#">Facebook</a>
+                        <a href="#">Instagram</a>
+                        <a href="#">WhatsApp</a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="#">Sobre Nosotros</a></li>
+                        <li><a href="#">Productos</a></li>
+                        <li><a href="#">Productores</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Ayuda</h4>
+                    <ul>
+                        <li><a href="#">Preguntas Frecuentes</a></li>
+                        <li><a href="#">Envíos</a></li>
+                        <li><a href="#">Devoluciones</a></li>
+                        <li><a href="#">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Términos y Condiciones</a></li>
+                        <li><a href="#">Política de Privacidad</a></li>
+                        <li><a href="#">Certificaciones</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 biomeMarket. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

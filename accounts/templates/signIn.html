@@ -1,0 +1,163 @@
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - biomeMarket</title>
+    <link rel="stylesheet" href="{% static 'css/signin.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="signin-container">
+        <!-- Panel Izquierdo - Formulario -->
+        <div class="signin-form-section">
+            <div class="form-wrapper">
+                <!-- Logo -->
+                <div class="logo-section">
+                    <img src="{% static 'img/logo_black.png' %}" alt="biomeMarket Logo">
+                </div>
+
+                <!-- Título -->
+                <div class="form-header">
+                    <h1>Bienvenido de nuevo</h1>
+                    <p>Inicia sesión para continuar</p>
+                </div>
+
+                <!-- Formulario de Login -->
+                <form class="signin-form" id="signinForm">
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            placeholder="tu@email.com"
+                            required
+                        >
+                        <span class="error-message" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <div class="password-input-wrapper">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                placeholder="Tu contraseña"
+                                required
+                            >
+                            <button type="button" class="toggle-password" id="togglePassword">
+                                👁️
+                            </button>
+                        </div>
+                        <span class="error-message" id="passwordError"></span>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="remember">
+                            <span class="checkmark"></span>
+                            Recordarme
+                        </label>
+                        <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                    </div>
+
+                    <button type="submit" class="btn-signin">Iniciar Sesión</button>
+                </form>
+
+                <!-- Crear Cuenta -->
+                <div class="signup-link">
+                    <p>¿No tienes una cuenta? <a href="#">Regístrate aquí</a></p>
+                </div>
+
+                <!-- Volver al inicio -->
+                <div class="back-home">
+                    <a href="/">← Volver al inicio</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho - Información -->
+        <div class="signin-info-section">
+            <div class="info-content">
+                <h2>Productos Frescos del Campo</h2>
+                <p>Accede a los mejores productos agrícolas directamente de productores locales</p>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">🌱</span>
+                        <div>
+                            <h4>Productos Frescos</h4>
+                            <p>Calidad garantizada</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🚚</span>
+                        <div>
+                            <h4>Envío Rápido</h4>
+                            <p>A domicilio en 24-48h</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">💚</span>
+                        <div>
+                            <h4>Apoyo Local</h4>
+                            <p>Directo del productor</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle mostrar/ocultar contraseña
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+
+        // Validación del formulario
+        document.getElementById('signinForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Validación básica
+            let isValid = true;
+            
+            if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                document.getElementById('emailError').textContent = 'Ingresa un correo válido';
+                isValid = false;
+            } else {
+                document.getElementById('emailError').textContent = '';
+            }
+            
+            if (password.length < 6) {
+                document.getElementById('passwordError').textContent = 'La contraseña debe tener al menos 6 caracteres';
+                isValid = false;
+            } else {
+                document.getElementById('passwordError').textContent = '';
+            }
+            
+            if (isValid) {
+                // Aquí iría tu lógica de autenticación
+                alert('Iniciando sesión...');
+            }
+        });
+
+        // Limpiar mensajes de error al escribir
+        document.getElementById('email').addEventListener('input', function() {
+            document.getElementById('emailError').textContent = '';
+        });
+        
+        document.getElementById('password').addEventListener('input', function() {
+            document.getElementById('passwordError').textContent = '';
+        });
+    </script>
+</body>
+</html>

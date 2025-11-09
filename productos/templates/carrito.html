@@ -1,0 +1,204 @@
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - biomeMarket</title>
+    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar Simplificada -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="{% static 'img/logo.png' %}" alt="biomeMarket Logo">
+            </div>
+            <div class="cart-nav">
+                <a href="/" class="btn-continue-shopping">← Continuar Comprando</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="cart-container">
+        <!-- Contenido Principal -->
+        <main class="cart-main">
+            <div class="container">
+                <div class="cart-header">
+                    <h1>Tu Carrito</h1>
+                    <span class="items-count" id="itemsCount">2 productos</span>
+                </div>
+
+                <!-- Mensaje Carrito Vacío (Opcional) -->
+                <div class="empty-cart hidden" id="emptyCart">
+                    <div class="empty-icon">🛒</div>
+                    <h2>Tu carrito está vacío</h2>
+                    <p>Agrega productos para verlos aquí.</p>
+                    <a href="#productos" class="btn btn-primary">Explorar Productos</a>
+                </div>
+
+                <!-- Lista de Productos -->
+                <div class="cart-items" id="cartItems">
+                    <!-- Producto 1 -->
+                    <div class="cart-item">
+                        <div class="item-image">
+                            <img src="producto1.jpg" alt="Tomate Cherry Orgánico">
+                        </div>
+                        <div class="item-details">
+                            <h3>Tomate Cherry Orgánico</h3>
+                            <div class="badge">Orgánico</div>
+                            <p class="unit-price">$3.50/kg</p>
+                        </div>
+                        <div class="quantity-controls">
+                            <button class="qty-btn" onclick="updateQuantity(this, -1)">−</button>
+                            <input type="number" value="2" min="1" class="qty-input" onchange="updateSubtotal(this)">
+                            <button class="qty-btn" onclick="updateQuantity(this, 1)">+</button>
+                        </div>
+                        <div class="subtotal">$7.00</div>
+                        <button class="remove-item" onclick="removeItem(this)">✕</button>
+                    </div>
+
+                    <!-- Producto 2 -->
+                    <div class="cart-item">
+                        <div class="item-image">
+                            <img src="producto2.jpg" alt="Aguacate Hass">
+                        </div>
+                        <div class="item-details">
+                            <h3>Aguacate Hass</h3>
+                            <div class="badge oferta">Oferta</div>
+                            <p class="unit-price">$2.80/lb</p>
+                        </div>
+                        <div class="quantity-controls">
+                            <button class="qty-btn" onclick="updateQuantity(this, -1)">−</button>
+                            <input type="number" value="1" min="1" class="qty-input" onchange="updateSubtotal(this)">
+                            <button class="qty-btn" onclick="updateQuantity(this, 1)">+</button>
+                        </div>
+                        <div class="subtotal">$2.80</div>
+                        <button class="remove-item" onclick="removeItem(this)">✕</button>
+                    </div>
+                </div>
+
+                <!-- Resumen de Orden -->
+                <div class="order-summary">
+                    <h2>Resumen de Orden</h2>
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">$9.80</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Envío:</span>
+                        <span class="free">Gratis</span>
+                    </div>
+                    <div class="summary-row discount">
+                        <span>Código de Descuento:</span>
+                        <div class="promo-input">
+                            <input type="text" placeholder="Ingresa código" id="promoCode">
+                            <button onclick="applyPromo()" class="btn-apply-promo">Aplicar</button>
+                        </div>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="total">$9.80</span>
+                    </div>
+                    <button class="btn-checkout">Proceder al Pago</button>
+                    <div class="trust-signals">
+                        <span>🔒</span>
+                        <span>Pago Seguro</span>
+                        <span>🚚</span>
+                        <span>Entrega en 24-48h</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Navbar Inferior para Móvil -->
+    <footer class="mobile-footer hidden-desktop">
+        <div class="container">
+            <button class="btn-checkout-mobile">Proceder al Pago - $9.80</button>
+        </div>
+    </footer>
+
+    <script>
+        // Función para actualizar cantidad
+        function updateQuantity(btn, change) {
+            const input = btn.parentElement.querySelector('.qty-input');
+            let qty = parseInt(input.value) + change;
+            if (qty < 1) qty = 1;
+            input.value = qty;
+            updateSubtotal(input);
+            updateCartTotal();
+            updateItemsCount();
+        }
+
+        // Actualizar subtotal de un item
+        function updateSubtotal(input) {
+            const item = input.closest('.cart-item');
+            const unitPrice = parseFloat(item.querySelector('.unit-price').textContent.replace('$', '').replace('/kg', '').replace('/lb', '').replace('/unidad', ''));
+            const qty = parseInt(input.value);
+            const subtotalEl = item.querySelector('.subtotal');
+            const subtotal = (unitPrice * qty).toFixed(2);
+            subtotalEl.textContent = `$${subtotal}`;
+            updateCartTotal();
+        }
+
+        // Remover item del carrito
+        function removeItem(btn) {
+            if (confirm('¿Eliminar este producto del carrito?')) {
+                btn.closest('.cart-item').remove();
+                updateCartTotal();
+                updateItemsCount();
+                checkEmptyCart();
+            }
+        }
+
+        // Aplicar promoción (ejemplo)
+        function applyPromo() {
+            const code = document.getElementById('promoCode').value;
+            if (code === 'BIOME10') {
+                alert('¡Descuento del 10% aplicado!');
+                updateCartTotal(true); // true para aplicar descuento
+            } else {
+                alert('Código inválido');
+            }
+        }
+
+        // Actualizar total del carrito
+        let hasDiscount = false;
+        function updateCartTotal(applyDiscount = false) {
+            const subtotals = document.querySelectorAll('.subtotal');
+            let total = 0;
+            subtotals.forEach(sub => {
+                total += parseFloat(sub.textContent.replace('$', ''));
+            });
+            if (applyDiscount && !hasDiscount) {
+                total *= 0.9;
+                hasDiscount = true;
+            }
+            document.getElementById('subtotal').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+            document.querySelector('.btn-checkout-mobile').textContent = `Proceder al Pago - $${total.toFixed(2)}`;
+        }
+
+        // Actualizar conteo de items
+        function updateItemsCount() {
+            const items = document.querySelectorAll('.cart-item');
+            document.getElementById('itemsCount').textContent = `${items.length} ${items.length === 1 ? 'producto' : 'productos'}`;
+        }
+
+        // Verificar carrito vacío
+        function checkEmptyCart() {
+            const items = document.querySelectorAll('.cart-item');
+            const cartItems = document.getElementById('cartItems');
+            const emptyCart = document.getElementById('emptyCart');
+            if (items.length === 0) {
+                cartItems.classList.add('hidden');
+                emptyCart.classList.remove('hidden');
+            }
+        }
+
+        // Inicializar
+        updateItemsCount();
+    </script>
+</body>
+</html>

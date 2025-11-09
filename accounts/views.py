@@ -1,13 +1,14 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
-class HomeView(TemplateView):
-    template_name = 'home.html'
+
+class LoginView(TemplateView):
+    template_name = 'signIn.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
-class CartView(TemplateView):
-    template_name = 'carrito.html'
+class SignupView(TemplateView):
+    template_name = 'signUp.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
