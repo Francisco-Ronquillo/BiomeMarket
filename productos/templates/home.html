@@ -22,7 +22,7 @@
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
             <div class="nav-icons">
-                <a href="#buscar" class="icon">🔍</a>
+                <a href="{% url 'productos:list_product' %}" class="icon">🔍</a>
                 <a href="{% url 'productos:carrito' %}" class="icon">🛒</a>
                 <a href="{% url 'accounts:signin' %}" class="btn-login">Iniciar Sesion</a>
                 <a href="{% url 'accounts:signup' %}" class="btn-login">Registrarse</a>

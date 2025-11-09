@@ -1,0 +1,358 @@
+{% load static %}
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todos los Productos - biomeMarket</title>
+    <link rel="stylesheet" href="{% static 'css/all-products.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="{% static 'img/logo.png' %}" alt="biomeMarket Logo">
+            </div>
+            <div class="nav-search">
+                <input type="text" placeholder="Buscar productos..." id="globalSearch">
+                <button class="search-btn">🔍</button>
+            </div>
+            <div class="nav-icons">
+                <a href="/signin" class="btn-login">Ingresar</a>
+                <a href="/cart" class="icon">🛒 <span class="cart-count">3</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="products-container">
+        <!-- Header de Productos -->
+        <section class="products-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="breadcrumbs">
+                        <a href="/">Inicio</a> > Todos los Productos
+                    </div>
+                    <h1>Todos los Productos</h1>
+                    <p class="results-count">Mostrando 48 productos frescos del campo</p>
+                </div>
+                <div class="header-controls">
+                    <div class="sort-controls">
+                        <label for="sortSelect">Ordenar por:</label>
+                        <select id="sortSelect" onchange="sortProducts()">
+                            <option value="default">Relevancia</option>
+                            <option value="price-low">Precio: Bajo a Alto</option>
+                            <option value="price-high">Precio: Alto a Bajo</option>
+                            <option value="new">Más Nuevos</option>
+                            <option value="rating">Mejor Valorados</option>
+                        </select>
+                    </div>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="toggleView('grid')">🟥</button>
+                        <button class="view-btn" onclick="toggleView('list')">📋</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contenido Principal -->
+        <div class="main-content">
+            <div class="container">
+                <div class="layout-grid">
+                    <!-- Sidebar Filtros -->
+                    <aside class="filters-sidebar">
+                        <div class="filter-section">
+                            <h3>Categorías</h3>
+                            <ul class="filter-list">
+                                <li><label><input type="checkbox" value="frutas"> Frutas (12)</label></li>
+                                <li><label><input type="checkbox" value="verduras"> Verduras (10)</label></li>
+                                <li><label><input type="checkbox" value="granos"> Granos (8)</label></li>
+                                <li><label><input type="checkbox" value="organicos"> Orgánicos (15)</label></li>
+                                <li><label><input type="checkbox" value="lacteos"> Lácteos (5)</label></li>
+                                <li><label><input type="checkbox" value="carnes"> Carnes (8)</label></li>
+                            </ul>
+                        </div>
+                        <div class="filter-section">
+                            <h3>Rango de Precio</h3>
+                            <div class="price-range">
+                                <input type="range" id="priceRange" min="0" max="50" value="50" onchange="filterByPrice()">
+                                <span class="price-value">$0 - $<span id="priceMax">50</span></span>
+                            </div>
+                        </div>
+                        <div class="filter-section">
+                            <h3>Características</h3>
+                            <ul class="filter-list">
+                                <li><label><input type="checkbox" value="organico"> Orgánico</label></li>
+                                <li><label><input type="checkbox" value="recien"> Recién Cosechado</label></li>
+                                <li><label><input type="checkbox" value="oferta"> En Oferta</label></li>
+                            </ul>
+                        </div>
+                        <button class="clear-filters" onclick="clearFilters()">Limpiar Filtros</button>
+                    </aside>
+
+                    <!-- Grid de Productos -->
+                    <main class="products-main">
+                        <div class="products-grid" id="productsGrid">
+                            <!-- Ejemplo de Productos (expandidos de la home) -->
+                            <div class="producto-card">
+                                <div class="badge">Orgánico</div>
+                                <img src="tomate-cherry.jpg" alt="Tomate Cherry Orgánico">
+                                <h3>Tomate Cherry Orgánico</h3>
+                                <div class="rating">⭐⭐⭐⭐⭐ (45)</div>
+                                <p class="price">$3.50/kg</p>
+                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
+                            </div>
+                            <div class="producto-card">
+                                <div class="badge oferta">Oferta</div>
+                                <img src="aguacate-hass.jpg" alt="Aguacate Hass">
+                                <h3>Aguacate Hass</h3>
+                                <div class="rating">⭐⭐⭐⭐ (32)</div>
+                                <p class="price">$2.80/lb</p>
+                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
+                            </div>
+                            <div class="producto-card">
+                                <img src="lechuga-hidroponica.jpg" alt="Lechuga Hidropónica">
+                                <h3>Lechuga Hidropónica</h3>
+                                <div class="rating">⭐⭐⭐⭐⭐ (28)</div>
+                                <p class="price">$1.50/unidad</p>
+                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
+                            </div>
+                            <div class="producto-card">
+                                <div class="badge">Recién Cosechado</div>
+                                <img src="maiz-dulce.jpg" alt="Maíz Dulce">
+                                <h3>Maíz Dulce</h3>
+                                <div class="rating">⭐⭐⭐⭐ (41)</div>
+                                <p class="price">$4.00/docena</p>
+                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
+                            </div>
+                            <div class="producto-card">
+                                <img src="manzana-fuji.jpg" alt="Manzana Fuji">
+                                <h3>Manzana Fuji</h3>
+                                <div class="rating">⭐⭐⭐⭐⭐ (19)</div>
+                                <p class="price">$2.20/kg</p>
+                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
+                            </div>
+                            <div class="producto-card">
+                                <div class="badge oferta">Oferta</div>
+                                <img src="brocoli-organico.jpg" alt="Brócoli Orgánico">
+                                <h3>Brócoli Orgánico</h3>
+                                <div class="rating">⭐⭐⭐⭐ (25)</div>
+                                <p class="price">$2.50/kg</p>
+                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
+                            </div>
+                            <!-- Más productos... (repite estructura para 48 items en producción) -->
+                        </div>
+
+                        <!-- Paginación -->
+                        <div class="pagination">
+                            <button class="page-btn" onclick="changePage(-1)">Anterior</button>
+                            <span class="page-numbers">
+                                <button class="page-num active" onclick="changePage(1)">1</button>
+                                <button class="page-num" onclick="changePage(2)">2</button>
+                                <button class="page-num" onclick="changePage(3)">3</button>
+                                <span>...</span>
+                                <button class="page-num" onclick="changePage(5)">5</button>
+                            </span>
+                            <button class="page-btn" onclick="changePage(1)">Siguiente</button>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer (reutiliza de home) -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 biomeMarket. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Búsqueda global mejorada - Filtra productos en tiempo real
+        let searchTimeout;
+        document.getElementById('globalSearch').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const query = this.value.toLowerCase().trim();
+                filterProductsBySearch(query);
+            }, 300); // Debounce para evitar filtrados excesivos
+        });
+
+        function filterProductsBySearch(query) {
+            const cards = document.querySelectorAll('.producto-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = card.querySelector('h3').textContent.toLowerCase();
+                const price = card.querySelector('.price').textContent.toLowerCase();
+                const isMatch = query === '' || 
+                               name.includes(query) || 
+                               price.includes(query);
+
+                if (isMatch) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Actualizar contador de resultados
+            const resultsEl = document.querySelector('.results-count');
+            if (resultsEl) {
+                resultsEl.textContent = `Mostrando ${visibleCount} ${visibleCount === 1 ? 'producto' : 'productos'} de 48`;
+            }
+
+            // Ocultar sidebar si no hay resultados
+            if (visibleCount === 0) {
+                showNoResults();
+            } else {
+                hideNoResults();
+            }
+        }
+
+        // Función para mostrar mensaje "No hay resultados"
+        function showNoResults() {
+            let noResults = document.getElementById('noResults');
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.id = 'noResults';
+                noResults.className = 'no-results';
+                noResults.innerHTML = `
+                    <div class="no-results-content">
+                        <div class="no-results-icon">🔍</div>
+                        <h3>No se encontraron productos</h3>
+                        <p>Intenta con otra palabra clave o categoría.</p>
+                        <button class="clear-search" onclick="clearSearch()">Limpiar Búsqueda</button>
+                    </div>
+                `;
+                document.getElementById('productsGrid').appendChild(noResults);
+            }
+            noResults.style.display = 'block';
+        }
+
+        // Ocultar mensaje de no resultados
+        function hideNoResults() {
+            const noResults = document.getElementById('noResults');
+            if (noResults) {
+                noResults.style.display = 'none';
+            }
+        }
+
+        // Limpiar búsqueda
+        function clearSearch() {
+            document.getElementById('globalSearch').value = '';
+            filterProductsBySearch('');
+        }
+
+        // Integrar con filtros existentes (opcional - combina con checkboxes)
+        document.addEventListener('change', function(e) {
+            if (e.target.type === 'checkbox' || e.target.id === 'priceRange') {
+                filterProductsByFilters();
+            }
+        });
+
+        function filterProductsByFilters() {
+            const query = document.getElementById('globalSearch').value.toLowerCase().trim();
+            const selectedCategories = Array.from(document.querySelectorAll('.filter-list input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+            const maxPrice = parseFloat(document.getElementById('priceRange').value);
+            
+            const cards = document.querySelectorAll('.producto-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                let matchesSearch = true;
+                let matchesCategory = selectedCategories.length === 0 || 
+                    selectedCategories.some(cat => card.classList.contains(cat));
+                let matchesPrice = true;
+
+                // Para matchesPrice en producción: extrae precio numérico y compara <= maxPrice
+                // Ejemplo simple: si .price text <= maxPrice (necesita parseo)
+                const priceText = card.querySelector('.price').textContent.replace('$', '').replace('/kg', '').replace('/lb', '').replace('/unidad', '').trim();
+                const priceNum = parseFloat(priceText);
+                if (!isNaN(priceNum)) {
+                    matchesPrice = priceNum <= maxPrice;
+                }
+
+                if (query !== '') {
+                    const name = card.querySelector('h3').textContent.toLowerCase();
+                    const price = card.querySelector('.price').textContent.toLowerCase();
+                    matchesSearch = name.includes(query) || price.includes(query);
+                }
+
+                if (matchesSearch && matchesCategory && matchesPrice) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Actualizar contador
+            document.querySelector('.results-count').textContent = `Mostrando ${visibleCount} ${visibleCount === 1 ? 'producto' : 'productos'} de 48`;
+
+            if (visibleCount === 0) {
+                showNoResults();
+            } else {
+                hideNoResults();
+            }
+        }
+
+        function filterByPrice() {
+            const range = document.getElementById('priceRange');
+            document.getElementById('priceMax').textContent = range.value;
+            filterProductsByFilters();
+        }
+
+        // Actualizar función clearFilters para incluir búsqueda
+        function clearFilters() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('priceRange').value = 50;
+            document.getElementById('globalSearch').value = '';
+            filterProductsBySearch(''); // Reset a todos visibles
+        }
+
+        // Otras funciones básicas (de la versión anterior)
+        function sortProducts() {
+            const select = document.getElementById('sortSelect');
+            // Lógica de ordenamiento (ej: reordenar grid basado en data-price, etc.)
+            // En producción: usa Array.sort() en cards y re-append
+            console.log('Ordenando por: ' + select.value); // Placeholder
+        }
+
+        function toggleView(view) {
+            const grid = document.getElementById('productsGrid');
+            if (view === 'list') {
+                grid.classList.add('list-view');
+            } else {
+                grid.classList.remove('list-view');
+            }
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function addToCart(btn) {
+            const cartCount = document.querySelector('.cart-count');
+            let count = parseInt(cartCount.textContent) + 1;
+            cartCount.textContent = count;
+            btn.textContent = '¡Agregado!';
+            btn.style.background = '#45a049';
+            setTimeout(() => {
+                btn.textContent = 'Agregar al Carrito';
+                btn.style.background = '#4CAF50';
+            }, 2000);
+        }
+
+        function changePage(direction) {
+            // Lógica de paginación (carga dinámica en producción)
+            console.log('Cambiando página: ' + direction);
+        }
+
+        // Inicializar
+        filterProductsBySearch(''); // Muestra todos al cargar
+    </script>
+</body>
+</html>
