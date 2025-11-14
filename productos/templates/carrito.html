@@ -12,193 +12,336 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <img src="{% static 'img/logo.png' %}" alt="biomeMarket Logo">
+                <a href="{% url 'productos:list_product' %}">
+                    <img src="{% static 'img/logo.png' %}" alt="biomeMarket Logo">
+                </a>
             </div>
             <div class="cart-nav">
-                <a href="/" class="btn-continue-shopping">← Continuar Comprando</a>
+                <a href="{% url 'productos:list_product' %}" class="btn-continue-shopping">← Continuar Comprando</a>
             </div>
         </div>
     </nav>
 
     <div class="cart-container">
-        <!-- Contenido Principal -->
         <main class="cart-main">
             <div class="container">
                 <div class="cart-header">
                     <h1>Tu Carrito</h1>
-                    <span class="items-count" id="itemsCount">2 productos</span>
+                    <span class="items-count" id="itemsCount">
+                        {{ items_unicos }} {% if items_unicos == 1 %}producto{% else %}productos{% endif %} ({{ total_items }} items)
+                    </span>
                 </div>
 
-                <!-- Mensaje Carrito Vacío (Opcional) -->
-                <div class="empty-cart hidden" id="emptyCart">
+                <!-- Carrito Vacío -->
+                <div class="empty-cart {% if cart_items %}hidden{% endif %}" id="emptyCart">
                     <div class="empty-icon">🛒</div>
                     <h2>Tu carrito está vacío</h2>
-                    <p>Agrega productos para verlos aquí.</p>
-                    <a href="#productos" class="btn btn-primary">Explorar Productos</a>
+                    <p>Agrega productos frescos del campo para verlos aquí.</p>
+                    <a href="{% url 'productos:list_product' %}" class="btn btn-primary">Explorar Productos</a>
                 </div>
 
                 <!-- Lista de Productos -->
-                <div class="cart-items" id="cartItems">
-                    <!-- Producto 1 -->
-                    <div class="cart-item">
+                <div class="cart-items {% if not cart_items %}hidden{% endif %}" id="cartItems">
+                    {% for item in cart_items %}
+                    <div class="cart-item" data-producto-id="{{ item.producto.id }}">
                         <div class="item-image">
-                            <img src="producto1.jpg" alt="Tomate Cherry Orgánico">
+                            {% if item.producto.imagen %}
+                                <img src="{{ item.producto.imagen.url }}" alt="{{ item.producto.nombre }}" loading="lazy">
+                            {% else %}
+                                <img src="{% static 'img/default-producto.jpg' %}" alt="{{ item.producto.nombre }}">
+                            {% endif %}
                         </div>
                         <div class="item-details">
-                            <h3>Tomate Cherry Orgánico</h3>
-                            <div class="badge">Orgánico</div>
-                            <p class="unit-price">$3.50/kg</p>
+                            <h3>{{ item.nombre }}</h3>
+                            {% if item.producto.categoria.tipo in 'vegetal,frutas' %}
+                                <div class="badge">Orgánico</div>
+                            {% endif %}
+                            {% if item.precio_unitario < umbral_oferta %}
+                                <div class="badge oferta">Oferta</div>
+                            {% endif %}
+                            <p class="unit-price">${{ item.precio_unitario|floatformat:2 }}{% if item.peso %}/{{ item.peso|floatformat:2 }}kg{% endif %}</p>
+                            <small class="item-description">{{ item.producto.descripcion|truncatewords:10 }}</small>
                         </div>
                         <div class="quantity-controls">
-                            <button class="qty-btn" onclick="updateQuantity(this, -1)">−</button>
-                            <input type="number" value="2" min="1" class="qty-input" onchange="updateSubtotal(this)">
-                            <button class="qty-btn" onclick="updateQuantity(this, 1)">+</button>
+                            <button class="qty-btn" type="button" onclick="updateQuantity({{ item.producto.id }}, -1)">−</button>
+                            <input type="number" value="{{ item.cantidad }}" min="1" max="{{ item.producto.stock }}" class="qty-input" onchange="updateQuantity({{ item.producto.id }}, this.value, this)">
+                            <button class="qty-btn" type="button" onclick="updateQuantity({{ item.producto.id }}, 1)">+</button>
                         </div>
-                        <div class="subtotal">$7.00</div>
-                        <button class="remove-item" onclick="removeItem(this)">✕</button>
+                        <div class="subtotal">${{ item.subtotal|floatformat:2 }}</div>
+                        <button class="remove-item" type="button" onclick="removeItem({{ item.producto.id }})">✕</button>
                     </div>
-
-                    <!-- Producto 2 -->
-                    <div class="cart-item">
-                        <div class="item-image">
-                            <img src="producto2.jpg" alt="Aguacate Hass">
-                        </div>
-                        <div class="item-details">
-                            <h3>Aguacate Hass</h3>
-                            <div class="badge oferta">Oferta</div>
-                            <p class="unit-price">$2.80/lb</p>
-                        </div>
-                        <div class="quantity-controls">
-                            <button class="qty-btn" onclick="updateQuantity(this, -1)">−</button>
-                            <input type="number" value="1" min="1" class="qty-input" onchange="updateSubtotal(this)">
-                            <button class="qty-btn" onclick="updateQuantity(this, 1)">+</button>
-                        </div>
-                        <div class="subtotal">$2.80</div>
-                        <button class="remove-item" onclick="removeItem(this)">✕</button>
-                    </div>
+                    {% empty %}
+                        <p>No hay items en el carrito.</p>
+                    {% endfor %}
                 </div>
 
                 <!-- Resumen de Orden -->
-                <div class="order-summary">
+                <div class="order-summary {% if not cart_items %}hidden{% endif %}">
                     <h2>Resumen de Orden</h2>
                     <div class="summary-row">
                         <span>Subtotal:</span>
-                        <span id="subtotal">$9.80</span>
+                        <span id="subtotal">${{ subtotal|floatformat:2 }}</span>
                     </div>
                     <div class="summary-row">
                         <span>Envío:</span>
-                        <span class="free">Gratis</span>
+                        <span class="free">Gratis (Ecuador)</span>
                     </div>
                     <div class="summary-row discount">
                         <span>Código de Descuento:</span>
                         <div class="promo-input">
-                            <input type="text" placeholder="Ingresa código" id="promoCode">
-                            <button onclick="applyPromo()" class="btn-apply-promo">Aplicar</button>
+                            <input type="text" placeholder="Ingresa código (ej. BIOME10)" id="promoCode">
+                            <button type="button" onclick="applyPromo()" class="btn-apply-promo">Aplicar</button>
                         </div>
                     </div>
                     <div class="summary-row total">
                         <span>Total:</span>
-                        <span id="total">$9.80</span>
+                        <span id="total">${{ total|floatformat:2 }}</span>
                     </div>
-                    <button class="btn-checkout">Proceder al Pago</button>
+                    <a href="{% url 'productos:checkout' %}" class="btn-checkout">Proceder al Pago</a>
                     <div class="trust-signals">
-                        <span>🔒</span>
-                        <span>Pago Seguro</span>
-                        <span>🚚</span>
-                        <span>Entrega en 24-48h</span>
+                        <span>🔒</span> <span>Pago Seguro</span> <span>🚚</span> <span>Entrega en 24-48h</span>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Navbar Inferior para Móvil -->
-    <footer class="mobile-footer hidden-desktop">
+    <!-- Footer Móvil -->
+    <footer class="mobile-footer hidden-desktop {% if not cart_items %}hidden{% endif %}">
         <div class="container">
-            <button class="btn-checkout-mobile">Proceder al Pago - $9.80</button>
+            <a href="{% url 'productos:checkout' %}" class="btn-checkout-mobile">
+                Proceder al Pago - ${{ total|floatformat:2 }}
+            </a>
         </div>
     </footer>
 
     <script>
-        // Función para actualizar cantidad
-        function updateQuantity(btn, change) {
-            const input = btn.parentElement.querySelector('.qty-input');
-            let qty = parseInt(input.value) + change;
-            if (qty < 1) qty = 1;
-            input.value = qty;
-            updateSubtotal(input);
-            updateCartTotal();
-            updateItemsCount();
-        }
-
-        // Actualizar subtotal de un item
-        function updateSubtotal(input) {
-            const item = input.closest('.cart-item');
-            const unitPrice = parseFloat(item.querySelector('.unit-price').textContent.replace('$', '').replace('/kg', '').replace('/lb', '').replace('/unidad', ''));
-            const qty = parseInt(input.value);
-            const subtotalEl = item.querySelector('.subtotal');
-            const subtotal = (unitPrice * qty).toFixed(2);
-            subtotalEl.textContent = `$${subtotal}`;
-            updateCartTotal();
-        }
-
-        // Remover item del carrito
-        function removeItem(btn) {
-            if (confirm('¿Eliminar este producto del carrito?')) {
-                btn.closest('.cart-item').remove();
-                updateCartTotal();
-                updateItemsCount();
-                checkEmptyCart();
+        // Helper para CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
+            return cookieValue;
         }
 
-        // Aplicar promoción (ejemplo)
-        function applyPromo() {
-            const code = document.getElementById('promoCode').value;
-            if (code === 'BIOME10') {
-                alert('¡Descuento del 10% aplicado!');
-                updateCartTotal(true); // true para aplicar descuento
+        // Update Quantity (corregido: actualiza input siempre + logs)
+        async function updateQuantity(productId, changeOrQty, inputEl = null) {
+            console.log('updateQuantity llamada:', { productId, changeOrQty, inputEl });
+
+            // Busca input siempre
+            const qtyInput = document.querySelector(`[data-producto-id="${productId}"] .qty-input`);
+            if (!qtyInput) {
+                console.error('Input qty no encontrado para productId:', productId);
+                showToast('Error: Input no encontrado.', 'error');
+                return;
+            }
+
+            let cantidad;
+            let isIncrement = typeof changeOrQty === 'number';
+            if (isIncrement) {
+                cantidad = parseInt(qtyInput.value) + changeOrQty;
             } else {
-                alert('Código inválido');
+                cantidad = parseInt(changeOrQty);
+            }
+            if (cantidad < 1) cantidad = 1;
+
+            console.log('Nueva cantidad calculada:', cantidad);
+
+            // UI inmediata
+            const item = qtyInput.closest('.cart-item');
+            const unitPriceStr = item.querySelector('.unit-price').textContent.replace(/[$\s\/a-z]/g, '');
+            const unitPrice = parseFloat(unitPriceStr);
+            const newSubtotal = (unitPrice * cantidad).toFixed(2);
+            qtyInput.value = cantidad;  // ← Siempre actualiza el número
+            item.querySelector('.subtotal').textContent = `$${newSubtotal}`;
+            console.log('UI actualizada localmente:', { cantidad, newSubtotal });
+
+            try {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+                formData.append('action', 'actualizar');
+                formData.append('producto_id', productId);
+                formData.append('cantidad', cantidad);
+
+                console.log('Enviando AJAX:', Object.fromEntries(formData));
+
+                const response = await fetch("{% url 'productos:carrito_ajax' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response:', response.status, errorText.substring(0, 200));
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+                }
+
+                const data = await response.json();
+                console.log('JSON recibido:', data);
+
+                if (data.success) {
+                    document.getElementById('subtotal').textContent = `$${data.subtotal.toFixed(2)}`;
+                    document.getElementById('total').textContent = `$${data.total.toFixed(2)}`;
+                    document.querySelector('.btn-checkout-mobile').textContent = `Proceder al Pago - $${data.total.toFixed(2)}`;
+                    document.getElementById('itemsCount').textContent = `${data.items_unicos} ${data.items_unicos === 1 ? 'producto' : 'productos'} (${data.total_items} items)`;
+                    showToast(data.message || `Cantidad actualizada a ${cantidad}.`, 'success');
+                } else {
+                    const prevCantidad = data.prev_cantidad !== undefined ? data.prev_cantidad : (cantidad - (isIncrement ? changeOrQty : 0));
+                    qtyInput.value = Math.max(1, prevCantidad);
+                    const prevSubtotal = (unitPrice * prevCantidad).toFixed(2);
+                    item.querySelector('.subtotal').textContent = `$${prevSubtotal}`;
+                    console.warn('Revertido por error:', { prevCantidad, error: data.error });
+                    showToast(data.error || 'Error al actualizar (ver stock).', 'error');
+                }
+            } catch (error) {
+                console.error('AJAX Error completo:', error);
+                const prevCantidad = parseInt(qtyInput.value) - (isIncrement ? changeOrQty : 0);
+                qtyInput.value = Math.max(1, prevCantidad);
+                const prevSubtotal = (unitPrice * prevCantidad).toFixed(2);
+                item.querySelector('.subtotal').textContent = `$${prevSubtotal}`;
+                showToast('Error de conexión. Número revertido.', 'error');
             }
         }
 
-        // Actualizar total del carrito
-        let hasDiscount = false;
-        function updateCartTotal(applyDiscount = false) {
-            const subtotals = document.querySelectorAll('.subtotal');
-            let total = 0;
-            subtotals.forEach(sub => {
-                total += parseFloat(sub.textContent.replace('$', ''));
-            });
-            if (applyDiscount && !hasDiscount) {
-                total *= 0.9;
-                hasDiscount = true;
+        // Remove Item
+        async function removeItem(productId) {
+            if (!confirm('¿Eliminar este producto del carrito?')) return;
+
+            const item = document.querySelector(`[data-producto-id="${productId}"]`);
+            item.style.opacity = '0.5';
+
+            try {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+                formData.append('action', 'remover');
+                formData.append('producto_id', productId);
+
+                const response = await fetch("{% url 'productos:carrito_ajax' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+
+                if (data.success) {
+                    item.remove();
+                    document.getElementById('subtotal').textContent = `$${data.subtotal.toFixed(2)}`;
+                    document.getElementById('total').textContent = `$${data.total.toFixed(2)}`;
+                    document.getElementById('itemsCount').textContent = `${data.items_unicos} ${data.items_unicos === 1 ? 'producto' : 'productos'} (${data.total_items} items)`;
+                    document.querySelector('.btn-checkout-mobile').textContent = `Proceder al Pago - $${data.total.toFixed(2)}`;
+                    checkEmptyCart();
+                    showToast(data.message || 'Producto removido.', 'success');
+                } else {
+                    item.style.opacity = '1';
+                    showToast(data.error || 'Error al remover.', 'error');
+                }
+            } catch (error) {
+                item.style.opacity = '1';
+                console.error('Remove error:', error);
+                showToast('Error de conexión.', 'error');
             }
-            document.getElementById('subtotal').textContent = `$${total.toFixed(2)}`;
-            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
-            document.querySelector('.btn-checkout-mobile').textContent = `Proceder al Pago - $${total.toFixed(2)}`;
         }
 
-        // Actualizar conteo de items
-        function updateItemsCount() {
-            const items = document.querySelectorAll('.cart-item');
-            document.getElementById('itemsCount').textContent = `${items.length} ${items.length === 1 ? 'producto' : 'productos'}`;
+        // Apply Promo
+        async function applyPromo() {
+            const code = document.getElementById('promoCode').value.trim();
+            if (!code) return showToast('Ingresa un código.', 'error');
+
+            try {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+                formData.append('action', 'promo');
+                formData.append('codigo', code);
+
+                const response = await fetch("{% url 'productos:carrito_ajax' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('total').textContent = `$${data.total.toFixed(2)}`;
+                    document.querySelector('.btn-checkout-mobile').textContent = `Proceder al Pago - $${data.total.toFixed(2)}`;
+                    showToast(data.message || 'Descuento aplicado.', 'success');
+                } else {
+                    showToast(data.error || 'Código inválido.', 'error');
+                }
+            } catch (error) {
+                console.error('Promo error:', error);
+                showToast('Error al aplicar promo.', 'error');
+            }
         }
 
-        // Verificar carrito vacío
+        // Check Empty Cart
         function checkEmptyCart() {
             const items = document.querySelectorAll('.cart-item');
-            const cartItems = document.getElementById('cartItems');
-            const emptyCart = document.getElementById('emptyCart');
+            const cartItemsEl = document.getElementById('cartItems');
+            const orderSummaryEl = document.querySelector('.order-summary');
+            const emptyCartEl = document.getElementById('emptyCart');
+            const mobileFooterEl = document.querySelector('.mobile-footer');
+
             if (items.length === 0) {
-                cartItems.classList.add('hidden');
-                emptyCart.classList.remove('hidden');
+                cartItemsEl.classList.add('hidden');
+                orderSummaryEl.classList.add('hidden');
+                emptyCartEl.classList.remove('hidden');
+                mobileFooterEl.classList.add('hidden');
+            } else {
+                cartItemsEl.classList.remove('hidden');
+                orderSummaryEl.classList.remove('hidden');
+                emptyCartEl.classList.add('hidden');
+                mobileFooterEl.classList.remove('hidden');
             }
+        }
+
+        // Toast
+        function showToast(message, type = 'success') {
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed; top: 80px; right: 20px; z-index: 10000;
+                padding: 1rem 1.5rem; border-radius: 8px; color: white; font-weight: 500;
+                transform: translateX(400px); transition: all 0.4s ease;
+                max-width: 350px; word-wrap: break-word; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            if (type === 'success') {
+                toast.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+            } else {
+                toast.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
+            }
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => toast.style.transform = 'translateX(0)');
+            setTimeout(() => {
+                toast.style.transform = 'translateX(400px)';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
         }
 
         // Inicializar
-        updateItemsCount();
+        document.addEventListener('DOMContentLoaded', () => {
+            checkEmptyCart();
+        });
     </script>
 </body>
 </html>

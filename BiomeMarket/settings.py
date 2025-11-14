@@ -63,6 +63,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                'productos.context_processors.carrito_context',
             ],
         },
     },
@@ -116,12 +118,23 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-MEDIA_URL = '/media/'
-STATIC_URL = 'static/'
-MEDIA_ROOT = BASE_DIR / 'media'
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATIC_URL = '/static/'  # ← FIX: Con / al inicio (URL base para templates {% static %})
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ← Para collectstatic en prod (crea carpeta si no existe)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # ← Global: static/css/, static/img/logo.png
+    # Si tienes en app: os.path.join(BASE_DIR, 'productos', 'static'),  # App-specific
+]  # Lista, no tuple—mejor para múltiples
 
-# Default primary key field type
+# Configuración de Media (imágenes subidas por usuarios, e.g., producto.imagen)
+MEDIA_URL = '/media/'  # ← Bien, con /
+MEDIA_ROOT = BASE_DIR / 'media'  # ← Bien (usa pathlib, OK en Django 3+)
+
+# Para desarrollo: Sirve static/media automáticamente
+DEBUG = True  # ← Asegura True en dev
+
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
+SESSION_COOKIE_AGE = 1209600
+SESSION_SAVE_EVERY_REQUEST = True
+CART_SESSION_ID = 'biomarket_carrito'
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

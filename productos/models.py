@@ -7,17 +7,20 @@ class Categoria(models.Model):
         ('pesquero', 'Pesquero'),
         ('ganadero', 'Ganadero'),
         ('vegetal', 'Vegetal'),
+        ('frutas', 'Frutas'),
+        ('cereales', 'Cereales'),
+        ('lacteos', 'Lácteos'),
     ]
 
     nombre = models.CharField(max_length=100)
-    tipo = models.CharField(max_length=20, choices=TIPOS, unique=True)
+    tipo = models.CharField(max_length=20, choices=TIPOS )
     descripcion = models.TextField()
     imagen = models.ImageField(upload_to='categorias/', null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Categorías"
 
-    def _str_(self):
+    def __str__(self):
         return self.nombre
 
 

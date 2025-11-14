@@ -1,0 +1,80 @@
+{% load static %}
+<div class="products-grid" id="productsGrid">
+    {% for producto in page_obj %}
+        <div class="producto-card-container">
+            <a href="{% url 'productos:detalle_producto' producto.id %}"
+               class="producto-card-link {{ producto.categoria.tipo }}{% if producto.categoria.tipo in organicos %} organico{% endif %}{% if producto.precio < umbral_oferta %} oferta{% endif %}{% if producto.stock <= 0 %} sin-stock{% endif %}"
+               data-product-id="{{ producto.id }}"
+               data-price="{{ producto.precio }}"
+               data-peso="{{ producto.peso|default:'1.00' }}"
+               data-categoria="{{ producto.categoria.tipo }}"
+               data-fechacreacion="{{ producto.fecha_creacion|date:'Y-m-d' }}"
+               data-stock="{{ producto.stock }}">
+
+                {% if producto.categoria.tipo in organicos %}
+                    <div class="badge">Orgánico</div>
+                {% endif %}
+                {% if producto.precio < umbral_oferta %}
+                    <div class="badge oferta">Oferta</div>
+                {% endif %}
+                {% if producto.stock <= 0 %}
+                    <div class="badge out-stock">Sin Stock</div>
+                {% endif %}
+
+                {% if producto.imagen %}
+                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="producto-imagen" loading="lazy">
+                {% else %}
+                    <img src="{% static 'img/default-producto.jpg' %}" alt="{{ producto.nombre }}" class="producto-imagen" loading="lazy">
+                {% endif %}
+
+                <div class="producto-info">
+                    <h3>{{ producto.nombre }}</h3>
+                    <p class="descripcion-breve">{{ producto.descripcion|truncatewords:10 }}</p>
+                    <div class="rating">({{ producto.stock }} disponibles)</div>
+                    {% if producto.peso %}
+                        <p class="price">${{ producto.precio|floatformat:2 }}/{{ producto.peso|floatformat:2 }}kg</p>
+                    {% else %}
+                        <p class="price">${{ producto.precio|floatformat:2 }}</p>
+                    {% endif %}
+                </div>
+            </a>
+            <div class="producto-actions">
+                {% if producto.stock > 0 %}
+                    <form method="post" action="{% url 'productos:carrito_ajax' %}" class="cart-form" style="display: contents;">
+                        {% csrf_token %}
+                        <input type="hidden" name="producto_id" value="{{ producto.id }}">
+                        <input type="hidden" name="action" value="agregar">
+                        <input type="hidden" name="cantidad" value="1">
+                        <button type="submit" class="btn-add-cart">Agregar al Carrito</button>
+                    </form>
+                {% else %}
+                    <button class="btn-out-stock" disabled>Sin Stock</button>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <div class="no-results">
+            <h3>No hay productos disponibles que coincidan con los filtros.</h3>
+            <p>Prueba otros filtros o <a href="{% url 'productos:listado_producto' %}">regresa al listado</a>.</p>
+        </div>
+    {% endfor %}
+</div>
+{% if is_paginated %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="#" class="page-btn" onclick="goToPage('{{ page_obj.previous_page_number }}')">Anterior</a>
+    {% endif %}
+    <span class="page-numbers">
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <button class="page-num active">{{ num }}</button>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <button class="page-num" onclick="goToPage('{{ num }}')">{{ num }}</button>
+            {% endif %}
+        {% endfor %}
+    </span>
+    {% if page_obj.has_next %}
+        <a href="#" class="page-btn" onclick="goToPage('{{ page_obj.next_page_number }}')">Siguiente</a>
+    {% endif %}
+</div>
+{% endif %}

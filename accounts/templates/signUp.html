@@ -1,142 +1,113 @@
 {% load static %}
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - biomeMarket</title>
-    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Cuenta - BioMarket</title>
+  <link rel="stylesheet" href="{% static 'css/signup.css' %}">
 </head>
+{% block content %}
 <body>
-    <div class="signup-container">
-        <!-- Sección izquierda con imagen -->
-        <div class="signup-left">
-            <div class="overlay">
-                <img src="{% static 'img/logo_black.png' %}" alt="biomeMarket Logo">
-                <h2>¡Únete a biomeMarket!</h2>
-                <p>Conecta con productores locales y disfruta de productos frescos del campo</p>
-                <ul class="benefits">
-                    <li>✓ Productos frescos garantizados</li>
-                    <li>✓ Directo del productor</li>
-                    <li>✓ Envío a domicilio</li>
-                    <li>✓ Precios justos</li>
-                </ul>
-                <p class="login-text">¿Ya tienes cuenta? <a href="{% url 'accounts:signin' %}">Inicia Sesión</a></p>
-            </div>
+  <div class="signup-container">
+    <!-- Izquierda: logo / mensaje -->
+    <aside class="signup-left">
+      <div class="overlay">
+        <div class="logo">
+          <img src="{% static 'img/logo.png' %}" alt="Logo BioMarket">
+        </div>
+        <h2>Únete a BioMarket</h2>
+        <p>Compra y vende productos agrícolas frescos.</p>
+        <ul class="benefits">
+          <li>✓ Catálogo variado</li>
+          <li>✓ Envíos rápidos</li>
+          <li>✓ Precios competitivos</li>
+        </ul>
+        <p class="login-text">¿Ya tienes cuenta? <a href="{% url 'accounts:signin' %}">Inicia Sesión</a></p>
+      </div>
+    </aside>
+
+    <!-- Derecha: formulario -->
+    <main class="signup-right">
+      <form method="post" class="form-container" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="regresar">
+          <a href="{% url 'productos:home' %}" class="boton-recuperar">←</a>
         </div>
 
-        <!-- Sección derecha con formulario -->
-        <div class="signup-right">
-            <div class="form-container">
-                <h1>Crear Cuenta</h1>
-                <p class="subtitle">Completa los datos para registrarte</p>
+        <h1>CREAR CUENTA</h1>
+        <p class="subtitle">Completa los datos para registrarte</p>
 
-                <form class="signup-form" id="signupForm">
-                    <!-- Tipo de usuario -->
-                    <div class="user-type">
-                        <label class="radio-option">
-                            <input type="radio" name="userType" value="comprador" checked>
-                            <span class="radio-label">
-                                <span class="icon">🛒</span>
-                                <span>Comprador</span>
-                            </span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="userType" value="productor">
-                            <span class="radio-label">
-                                <span class="icon">🌾</span>
-                                <span>Productor</span>
-                            </span>
-                        </label>
-                    </div>
-
-                    <!-- Nombre completo -->
-                    <div class="form-group">
-                        <label for="fullName">Nombre Completo</label>
-                        <input type="text" id="fullName" name="fullName" placeholder="Juan Pérez" required>
-                    </div>
-
-                    <!-- Email -->
-                    <div class="form-group">
-                        <label for="email">Correo Electrónico</label>
-                        <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required>
-                    </div>
-
-                    <!-- Teléfono -->
-                    <div class="form-group">
-                        <label for="phone">Teléfono</label>
-                        <input type="tel" id="phone" name="phone" placeholder="+593 99 999 9999" required>
-                    </div>
-
-                    <!-- Ubicación -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="province">Provincia</label>
-                            <select id="province" name="province" required>
-                                <option value="">Seleccionar</option>
-                                <option value="pichincha">Pichincha</option>
-                                <option value="guayas">Guayas</option>
-                                <option value="azuay">Azuay</option>
-                                <option value="manabi">Manabí</option>
-                                <option value="tungurahua">Tungurahua</option>
-                                <option value="otros">Otros</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="city">Ciudad</label>
-                            <input type="text" id="city" name="city" placeholder="Quito" required>
-                        </div>
-                    </div>
-
-                    <!-- Dirección -->
-                    <div class="form-group">
-                        <label for="address">Dirección</label>
-                        <input type="text" id="address" name="address" placeholder="Calle principal y secundaria" required>
-                    </div>
-
-                    <!-- Contraseña -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="password">Contraseña</label>
-                            <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirmar Contraseña</label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repite tu contraseña" required>
-                        </div>
-                    </div>
-
-                    <!-- Campos adicionales para productores -->
-                    <div id="producerFields" style="display: none;">
-                        <div class="form-group">
-                            <label for="farmName">Nombre de la Finca/Negocio</label>
-                            <input type="text" id="farmName" name="farmName" placeholder="Finca Los Laureles">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="products">Productos que Ofrece</label>
-                            <input type="text" id="products" name="products" placeholder="Frutas, verduras, lácteos...">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="certifications">Certificaciones (opcional)</label>
-                            <input type="text" id="certifications" name="certifications" placeholder="Orgánico, comercio justo...">
-                        </div>
-                    </div>
-
-                    <!-- Términos y condiciones -->
-                    <div class="form-check">
-                        <input type="checkbox" id="terms" name="terms" required>
-                        <label for="terms">Acepto los <a href="#">Términos y Condiciones</a> y la <a href="#">Política de Privacidad</a></label>
-                    </div>
-
-                    <!-- Botón de registro -->
-                    <button type="submit" class="btn-signup">Crear Cuenta</button>
-                </form>
-            </div>
+        <div class="grid-row">
+          <div class="field">
+            {{ form.nombre.label_tag }}
+            {{ form.nombre }}
+            {{ form.nombre.errors }}
+          </div>
+          <div class="field">
+            {{ form.apellido.label_tag }}
+            {{ form.apellido }}
+            {{ form.apellido.errors }}
+          </div>
         </div>
-    </div>
 
-    <script src="signup-script.js"></script>
+        <div class="field">
+          {{ form.email.label_tag }}
+          {{ form.email }}
+          {{ form.email.errors }}
+        </div>
+
+        <div class="field">
+          {{ form.telefono.label_tag }}
+          {{ form.telefono }}
+          {{ form.telefono.errors }}
+        </div>
+
+        <div class="field">
+          {{ form.direccion.label_tag }}
+          {{ form.direccion }}
+          {{ form.direccion.errors }}
+        </div>
+
+        <div class="grid-row">
+          <div class="field">
+            {{ form.contraseña.label_tag }}
+            {{ form.contraseña }}
+            {{ form.contraseña.errors }}
+          </div>
+
+          <div class="field">
+            {{ form.confirmar_contraseña.label_tag }}
+            {{ form.confirmar_contraseña }}
+            {{ form.confirmar_contraseña.errors }}
+          </div>
+        </div>
+
+        <div class="full-width">
+          <button type="submit" class="btn">Crear</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    // Desvanecer errores automáticamente
+    setTimeout(() => {
+      document.querySelectorAll('.errorlist').forEach(el => {
+        el.classList.add('fade-out');
+        setTimeout(() => el.style.display = 'none', 600);
+      });
+    }, 4000);
+
+    // Si hay campo para mostrar campos de productor (opcional)
+    const prodToggle = document.querySelector('[name="es_productor"], [id="id_es_productor"]');
+    const producerFields = document.getElementById('producerFields');
+    if (prodToggle && producerFields) {
+      const update = () => producerFields.style.display = (prodToggle.checked ? 'block' : 'none');
+      prodToggle.addEventListener('change', update);
+      update();
+    }
+  </script>
 </body>
+{% endblock %}
 </html>

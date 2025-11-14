@@ -18,8 +18,8 @@ body {
 /* Sección Izquierda */
 .signup-left {
     flex: 1;
-    background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(56, 142, 60, 0.9)),
-                url('farm-background.jpg') center/cover;
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.73), rgba(56, 142, 60, 0.9)),
+                url('../img/banner.png') center/cover;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -80,7 +80,7 @@ body {
     opacity: 0.8;
 }
 
-/* Sección Derecha - CORREGIDO PARA SCROLL */
+/* Sección Derecha */
 .signup-right {
     flex: 1.2;
     display: flex;
@@ -115,54 +115,38 @@ body {
     font-size: 0.95rem;
 }
 
-/* Tipo de Usuario */
-.user-type {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
+/* Botón de regreso */
+.regresar {
+    margin-bottom: 1rem;
+    text-align: left;
 }
 
-.radio-option {
-    flex: 1;
-    cursor: pointer;
-}
-
-.radio-option input[type="radio"] {
-    display: none;
-}
-
-.radio-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.2rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    transition: all 0.3s;
-    background: white;
-}
-
-.radio-option input[type="radio"]:checked + .radio-label {
-    border-color: #4CAF50;
-    background: #f1f8f4;
-}
-
-.radio-label .icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-.radio-label span:last-child {
+.boton-recuperar {
+    font-size: 1.5rem;
+    color: #666;
+    text-decoration: none;
     font-weight: 600;
-    color: #333;
+    transition: color 0.3s;
 }
 
-/* Form Groups */
-.form-group {
+.boton-recuperar:hover {
+    color: #4CAF50;
+}
+
+/* Filas de campos en grid */
+.grid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
-.form-group label {
+/* Campos individuales */
+.field {
+    margin-bottom: 1.5rem;
+}
+
+.field label {
     display: block;
     margin-bottom: 0.5rem;
     color: #333;
@@ -170,8 +154,8 @@ body {
     font-size: 0.95rem;
 }
 
-.form-group input,
-.form-group select {
+.field input,
+.field select {
     width: 100%;
     padding: 0.9rem 1rem;
     border: 2px solid #e0e0e0;
@@ -181,57 +165,54 @@ body {
     transition: all 0.3s;
 }
 
-.form-group input:focus,
-.form-group select:focus {
+.field input:focus,
+.field select:focus {
     outline: none;
     border-color: #4CAF50;
     background: #f9fff9;
 }
 
-.form-group input::placeholder {
+.field input::placeholder {
     color: #aaa;
 }
 
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+/* Errores de Django */
+.errorlist {
+    color: #d32f2f;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    list-style: none;
+    padding: 0;
 }
 
-/* Checkbox */
-.form-check {
-    margin: 1.5rem 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
+.errorlist li {
+    background: #ffebee;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.25rem;
 }
 
-.form-check input[type="checkbox"] {
-    margin-top: 0.3rem;
-    cursor: pointer;
-    width: 18px;
-    height: 18px;
+.errorlist.fade-out {
+    opacity: 0;
+    transition: opacity 0.6s;
 }
 
-.form-check label {
-    font-size: 0.9rem;
-    color: #666;
-    line-height: 1.5;
-    cursor: pointer;
+/* Campos de productor (referenciado en script) */
+#producerFields {
+    border-top: 2px solid #e0e0e0;
+    padding-top: 1.5rem;
+    margin-top: 1rem;
+    display: none;  /* Oculto por defecto */
 }
 
-.form-check a {
-    color: #4CAF50;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.form-check a:hover {
-    text-decoration: underline;
+/* Contenedor full-width para botón */
+.full-width {
+    width: 100%;
+    margin-top: 1rem;
 }
 
 /* Botón Principal */
-.btn-signup {
+.btn {
     width: 100%;
     padding: 1rem;
     background: #4CAF50;
@@ -242,20 +223,12 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    margin-top: 1rem;
 }
 
-.btn-signup:hover {
+.btn:hover {
     background: #45a049;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
-}
-
-/* Campos de Productor */
-#producerFields {
-    border-top: 2px solid #e0e0e0;
-    padding-top: 1.5rem;
-    margin-top: 1rem;
 }
 
 /* Responsive */
@@ -277,7 +250,7 @@ body {
         padding: 2rem 1.5rem;
     }
 
-    .form-row {
+    .grid-row {
         grid-template-columns: 1fr;
     }
 }

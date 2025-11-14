@@ -23,61 +23,55 @@
             </ul>
             <div class="nav-icons">
                 <a href="{% url 'productos:list_product' %}" class="icon">🔍</a>
-                <a href="{% url 'productos:carrito' %}" class="icon">🛒</a>
-                <a href="{% url 'accounts:signin' %}" class="btn-login">Iniciar Sesion</a>
-                <a href="{% url 'accounts:signup' %}" class="btn-login">Registrarse</a>
+                <a href="{% url 'productos:carrito' %}" class="icon">🛒
+                    <span class="cart-count">{{ carrito.total_items|default:0 }}</span>
+                </a>
+
+                {% if usuario_autenticado %}
+            <!-- Mostrar cuando está autenticado -->
+                    <span class="user-greeting">{{ usuario.nombre }}</span>
+                    <a href="{% url 'accounts:logout' %}" class="btn-login">Cerrar Sesión</a>
+                {% else %}
+                <!-- Mostrar cuando NO está autenticado -->
+                    <a href="{% url 'accounts:signin' %}" class="btn-login">Iniciar Sesión</a>
+                    <a href="{% url 'accounts:signup' %}" class="btn-login">Registrarse</a>
+                {% endif %}
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-content">
-            <h1>Productos Agrícolas Frescos<br>Directo del Campo</h1>
-            <p>Conectamos productores locales con tu mesa</p>
-            <div class="hero-buttons">
-                <a href="#productos" class="btn btn-primary">Explorar Productos</a>
-                <a href="#ofertas" class="btn btn-secondary">Ver Ofertas</a>
-            </div>
-            <div class="search-bar">
-                <input type="text" placeholder="Buscar productos agrícolas...">
-                <button>Buscar</button>
-            </div>
+    <div class="hero-background"></div>  <!-- Capa de overlay -->
+    <div class="hero-content">
+        <h1>Productos Agrícolas Frescos<br>Directo del Campo</h1>
+        <p>Conectamos productores locales con tu mesa</p>
+    </div>
+</section>
+<section class="categorias" id="categorias">
+    <div class="container">
+        <h2>Categorías Principales</h2>
+        <div class="categoria-grid">
+            {% for categoria in categorias %}
+                <div class="categoria-card" onclick="goToCategoria('{{ categoria.tipo }}')" style="cursor: pointer;">
+                    {% if categoria.imagen %}
+                        <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}">
+                    {% else %}
+                        <img src="{% static 'img/logo.png' %}" alt="{{ categoria.nombre }}">  <!-- Imagen por defecto si no hay -->
+                    {% endif %}
+                    <h3>{{ categoria.nombre }}</h3>
+                    <p>{{ categoria.descripcion|truncatewords:10 }}</p>  <!-- Opcional: muestra una descripción corta -->
+                    <!-- Indicador visual de enlace (opcional) -->
+                    <small class="categoria-link">Ver productos</small>
+                </div>
+            {% empty %}
+                <div class="no-categorias">
+                    <p>No hay categorías disponibles.</p>
+                </div>
+            {% endfor %}
         </div>
-    </section>
-
-    <!-- Categorías -->
-    <section class="categorias" id="categorias">
-        <div class="container">
-            <h2>Categorías Principales</h2>
-            <div class="categoria-grid">
-                <div class="categoria-card">
-                    <img src="frutas.jpg" alt="Frutas">
-                    <h3>Frutas</h3>
-                </div>
-                <div class="categoria-card">
-                    <img src="verduras.jpg" alt="Verduras">
-                    <h3>Verduras</h3>
-                </div>
-                <div class="categoria-card">
-                    <img src="granos.jpg" alt="Granos">
-                    <h3>Granos</h3>
-                </div>
-                <div class="categoria-card">
-                    <img src="organicos.jpg" alt="Orgánicos">
-                    <h3>Orgánicos</h3>
-                </div>
-                <div class="categoria-card">
-                    <img src="lacteos.jpg" alt="Lácteos">
-                    <h3>Lácteos</h3>
-                </div>
-                <div class="categoria-card">
-                    <img src="carnes.jpg" alt="Carnes">
-                    <h3>Carnes</h3>
-                </div>
-            </div>
-        </div>
-    </section>
+    </div>
+</section>
 
     <!-- Productos Destacados -->
     <section class="productos" id="productos">
@@ -264,4 +258,12 @@
         </div>
     </footer>
 </body>
+<script>
+function goToCategoria(tipoCategoria) {
+    // Redirige al listado con filtro pre-seleccionado
+    const url = `/listado_producto/?categoria=${encodeURIComponent(tipoCategoria)}`;
+    console.log('Navegando a categoría:', tipoCategoria, 'URL:', url);
+    window.location.href = url;
+}
+</script>
 </html>

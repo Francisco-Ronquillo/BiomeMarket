@@ -6,7 +6,8 @@ env/
 .idea
 .env
 db.sqlite3
-
+*/migrations/*
+!*/migrations/__init__.py
 # Otros comunes que podrías querer ignorar:
 __pycache__/
 *.pyc

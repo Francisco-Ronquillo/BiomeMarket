@@ -1,10 +1,242 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- producto.html (fragmento corregido) -->
+{% load static %}
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>{{ producto.nombre }} - biomeMarket</title>
+    <link rel="stylesheet" href="{% static 'css/producto.css' %}">
 </head>
 <body>
+<nav class="navbar">
+    <div class="container">
+        <div class="nav-left">
+            <a href="{% url 'productos:list_product' %}" class="btn-back">←</a>
+            <div class="logo">
+                <a href="{% url 'productos:list_product' %}"><img src="{% static 'img/logo.png' %}" alt="Logo"></a>
+            </div>
+        </div>
+        <div class="nav-right">
+            {% if usuario_autenticado %}
+                <span class="user-greeting">{{ usuario.nombre|truncatechars:10 }}</span>
+                <a href="{% url 'accounts:logout' %}" class="btn-login">🚪</a>
+            {% else %}
+                <a href="{% url 'accounts:signin' %}" class="btn-login">🔐</a>
+                <a href="{% url 'accounts:signup' %}" class="btn-login">➕</a>
+            {% endif %}
+            <a href="{% url 'productos:carrito' %}" class="cart-icon">🛒
+                <span class="cart-count">{{ carrito.total_items|default:0 }}</span>
+            </a>
+        </div>
+    </div>
+</nav>
 
+<div class="producto-detail-container">
+    <div class="container">
+        <div class="producto-detail-grid">
+            <!-- Imagen + Badges -->
+            <div class="detail-image-section">
+                {% if producto.imagen %}
+                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="main-image">
+                {% else %}
+                    <img src="{% static 'img/default-producto.jpg' %}" alt="{{ producto.nombre }}" class="main-image">
+                {% endif %}
+                <div class="badges-container">
+                    {% if producto.categoria.tipo in 'vegetal,frutas' %}
+                        <div class="badge organico">Orgánico</div>
+                    {% endif %}
+                    {% if producto.precio < umbral_oferta %}
+                        <div class="badge oferta">Oferta</div>
+                    {% endif %}
+                    {% if not stock_disponible %}
+                        <div class="badge out-stock">Agotado</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="detail-info-section">
+                <h1>{{ producto.nombre }}</h1>
+                <p class="categoria">{{ producto.categoria.nombre }}</p>
+
+                <div class="precio-section">
+                    <span class="precio-main">${{ producto.precio|floatformat:2 }}</span>
+                    {% if producto.peso %}
+                        <span class="peso"> / {{ producto.peso|floatformat:2 }} kg</span>
+                        <span class="precio-kg">(${{ precio_por_kg|floatformat:2 }}/kg)</span>
+                    {% endif %}
+                </div>
+
+                <div class="descripcion">{{ producto.descripcion }}</div>
+                <p><strong>Stock:</strong> {{ producto.stock }} {% if stock_disponible %}disponibles{% else %}(Agotado){% endif %}</p>
+
+                {% if stock_disponible %}
+                    <div class="quantity-section">
+                        <label>Cantidad:</label>
+                        <div class="qty-controls">
+                            <button type="button" class="qty-btn" onclick="changeQuantity(-1)">−</button>
+                            <input type="number" id="qtyInput" value="1" min="1" max="{{ producto.stock }}" class="qty-input">
+                            <button type="button" class="qty-btn" onclick="changeQuantity(1)">+</button>
+                            <span class="max-note">Máx: {{ producto.stock }}</span>
+                        </div>
+                    </div>
+                    <form method="post" action="{% url 'productos:carrito_ajax' %}" id="addForm" class="add-to-cart-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="producto_id" value="{{ producto.id }}">
+                        <input type="hidden" name="accion" value="agregar"><!-- ← renombrado -->
+                        <input type="hidden" name="cantidad" id="hiddenQty" value="1">
+                        <button type="submit" class="btn-add-cart" id="addBtn">Agregar al Carrito</button>
+                    </form>
+                    <a href="{% url 'productos:carrito' %}" class="btn-view-cart">Ver Carrito</a>
+                {% else %}
+                    <button class="btn-out-stock" disabled>Agotado</button>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if productos_similares %}
+        <section class="similares-section">
+            <h2>Productos Similares</h2>
+            <div class="similares-grid">
+                {% for similar in productos_similares %}
+                    <a href="{% url 'productos:detalle_producto' similar.id %}" class="similar-card">
+                        {% if similar.imagen %}
+                            <img src="{{ similar.imagen.url }}" alt="{{ similar.nombre }}">
+                        {% else %}
+                            <img src="{% static 'img/default-producto.jpg' %}" alt="{{ similar.nombre }}">
+                        {% endif %}
+                        <h3>{{ similar.nombre }}</h3>
+                        <p>${{ similar.precio|floatformat:2 }}{% if similar.peso %}/{{ similar.peso|floatformat:2 }}kg{% endif %}</p>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// CSRF
+function getCookie(name){
+    let v=null;
+    if(document.cookie){
+        const parts=document.cookie.split(';');
+        for(let c of parts){
+            c=c.trim();
+            if(c.startsWith(name+'=')){ v=decodeURIComponent(c.slice(name.length+1)); break; }
+        }
+    }
+    return v||'';
+}
+
+// Cantidad
+const qtyInput=document.getElementById('qtyInput');
+const hiddenQty=document.getElementById('hiddenQty');
+const maxStock={{ producto.stock }};
+const addBtn=document.getElementById('addBtn');
+
+function changeQuantity(delta){
+    if(!qtyInput) return;
+    let current=parseInt(qtyInput.value)||1;
+    let newQty=Math.max(1, Math.min(current+delta, maxStock));
+    qtyInput.value=newQty;
+    if(hiddenQty) hiddenQty.value=newQty;
+    if(addBtn) addBtn.textContent=`Agregar ${newQty} al Carrito`;
+}
+
+if(qtyInput){
+    qtyInput.addEventListener('input', ()=>{
+        let val=parseInt(qtyInput.value)||1;
+        if(val>maxStock) val=maxStock;
+        if(val<1) val=1;
+        qtyInput.value=val;
+        hiddenQty.value=val;
+        if(addBtn) addBtn.textContent=`Agregar ${val} al Carrito`;
+    });
+}
+
+// AJAX agregar
+async function handleAddToCart(form){
+    const btn=form.querySelector('#addBtn');
+    if(!btn) return;
+    const original=btn.textContent;
+    btn.disabled=true;
+    btn.textContent='Agregando...';
+    try{
+        const fd=new FormData(form);
+        fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+        let actionUrl=form.getAttribute('action');
+        if(/\[object\sHTMLInputElement\]/.test(actionUrl)) actionUrl='{% url "productos:carrito_ajax" %}';
+        const resp=await fetch(actionUrl,{
+            method:'POST',
+            body:fd,
+            headers:{
+                'X-Requested-With':'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        if(!resp.ok) throw new Error('HTTP '+resp.status);
+        const data=await resp.json();
+        if(!data.success) throw new Error(data.error||'Error desconocido');
+        const cartCount=document.querySelector('.cart-count');
+        if(cartCount){
+            cartCount.textContent=data.total_items||0;
+            cartCount.style.background='#4CAF50';
+            setTimeout(()=>cartCount.style.background='#ff5722',900);
+        }
+        btn.textContent='¡Agregado!';
+        btn.style.backgroundColor='#4CAF50';
+        showToast(data.message,'success');
+        setTimeout(()=>{
+            btn.textContent=original;
+            btn.style.backgroundColor='';
+        },1500);
+    }catch(err){
+        console.error(err);
+        showToast('Error: '+err.message,'error');
+        btn.textContent=original;
+    }finally{
+        btn.disabled=false;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    const form=document.getElementById('addForm');
+    if(form){
+        form.addEventListener('submit', e=>{
+            e.preventDefault();
+            handleAddToCart(form);
+        });
+    }
+});
+
+// Búsqueda rápida
+function quickSearch(){
+    const q=document.getElementById('quickSearch')?.value.trim();
+    if(q) window.location.href=`{% url 'productos:list_product' %}?q=${encodeURIComponent(q)}`;
+}
+
+// Toast
+function showToast(message,type='success'){
+    const t=document.createElement('div');
+    t.className='toast-notification';
+    t.textContent=message;
+    t.style.cssText='position:fixed;top:90px;right:20px;z-index:10000;padding:1rem 1.3rem;border-radius:8px;color:#fff;font-weight:500;transform:translateX(400px);transition:.4s;box-shadow:0 4px 12px rgba(0,0,0,.15);';
+    t.style.background= type==='success' ? '#4CAF50' : '#f44336';
+    document.body.appendChild(t);
+    requestAnimationFrame(()=> t.style.transform='translateX(0)');
+    setTimeout(()=>{
+        t.style.transform='translateX(400px)';
+        setTimeout(()=> t.remove(),400);
+    },3000);
+}
+</script>
 </body>
 </html>
+
+<!-- productos/urls.py (verifica que exista esta ruta) -->
+# from django.urls import path
+# from productos.views import CartAjaxView
+# urlpatterns = [
+#     path('carrito-ajax/', CartAjaxView.as_view(), name='carrito_ajax'),
+#     ...
+# ]

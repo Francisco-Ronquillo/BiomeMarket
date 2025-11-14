@@ -24,7 +24,8 @@
                 </div>
 
                 <!-- Formulario de Login -->
-                <form class="signin-form" id="signinForm">
+                <form class="signin-form" id="signinForm" method="post">
+                    {% csrf_token %}
                     <div class="form-group">
                         <label for="email">Correo Electrónico</label>
                         <input 
@@ -119,37 +120,6 @@
             passwordInput.setAttribute('type', type);
             this.textContent = type === 'password' ? '👁️' : '🙈';
         });
-
-        // Validación del formulario
-        document.getElementById('signinForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Validación básica
-            let isValid = true;
-            
-            if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-                document.getElementById('emailError').textContent = 'Ingresa un correo válido';
-                isValid = false;
-            } else {
-                document.getElementById('emailError').textContent = '';
-            }
-            
-            if (password.length < 6) {
-                document.getElementById('passwordError').textContent = 'La contraseña debe tener al menos 6 caracteres';
-                isValid = false;
-            } else {
-                document.getElementById('passwordError').textContent = '';
-            }
-            
-            if (isValid) {
-                // Aquí iría tu lógica de autenticación
-                alert('Iniciando sesión...');
-            }
-        });
-
         // Limpiar mensajes de error al escribir
         document.getElementById('email').addEventListener('input', function() {
             document.getElementById('emailError').textContent = '';

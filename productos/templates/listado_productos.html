@@ -1,5 +1,5 @@
 {% load static %}
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -16,47 +16,61 @@
                 <img src="{% static 'img/logo.png' %}" alt="biomeMarket Logo">
             </div>
             <div class="nav-search">
-                <input type="text" placeholder="Buscar productos..." id="globalSearch">
+                <input type="text" placeholder="Buscar productos..." id="globalSearch" value="{{ request.GET.q|default:'' }}">
                 <button class="search-btn">🔍</button>
             </div>
             <div class="nav-icons">
-                <a href="/signin" class="btn-login">Ingresar</a>
-                <a href="/cart" class="icon">🛒 <span class="cart-count">3</span></a>
+                {% if usuario_autenticado %}
+                    <span class="user-greeting">{{ usuario.nombre }}</span>
+                    <a href="{% url 'accounts:logout' %}" class="btn-login">Cerrar Sesión</a>
+                {% else %}
+                    <a href="{% url 'accounts:signin' %}" class="btn-login">Iniciar Sesión</a>
+                    <a href="{% url 'accounts:signup' %}" class="btn-login">Registrarse</a>
+                {% endif %}
+                <a href="{% url 'productos:carrito' %}" class="icon">🛒
+                    <span class="cart-count">{{ carrito.total_items|default:0 }}</span>
+                </a>
             </div>
         </div>
     </nav>
 
     <div class="products-container">
-        <!-- Header de Productos -->
+        <!-- Header -->
         <section class="products-header">
             <div class="container">
                 <div class="header-content">
                     <div class="breadcrumbs">
-                        <a href="/">Inicio</a> > Todos los Productos
+                        <a href="{% url 'productos:home' %}">Inicio</a> > Todos los Productos
                     </div>
-                    <h1>Todos los Productos</h1>
-                    <p class="results-count">Mostrando 48 productos frescos del campo</p>
                 </div>
                 <div class="header-controls">
                     <div class="sort-controls">
                         <label for="sortSelect">Ordenar por:</label>
-                        <select id="sortSelect" onchange="sortProducts()">
-                            <option value="default">Relevancia</option>
-                            <option value="price-low">Precio: Bajo a Alto</option>
-                            <option value="price-high">Precio: Alto a Bajo</option>
-                            <option value="new">Más Nuevos</option>
-                            <option value="rating">Mejor Valorados</option>
+                        <select id="sortSelect" onchange="updateOrdering()">
+                            <option value="nombre" {% if request.GET.ordering == 'nombre' or not request.GET.ordering %}selected{% endif %}>Nombre (A-Z)</option>
+                            <option value="precio" {% if request.GET.ordering == 'precio' %}selected{% endif %}>Precio: Bajo a Alto</option>
+                            <option value="-precio" {% if request.GET.ordering == '-precio' %}selected{% endif %}>Precio: Alto a Bajo</option>
+                            <option value="peso" {% if request.GET.ordering == 'peso' %}selected{% endif %}>Peso: Bajo a Alto</option>
+                            <option value="-peso" {% if request.GET.ordering == '-peso' %}selected{% endif %}>Peso: Alto a Bajo</option>
+                            <option value="-fecha_creacion" {% if request.GET.ordering == '-fecha_creacion' %}selected{% endif %}>Más Nuevos</option>
                         </select>
                     </div>
                     <div class="view-toggle">
-                        <button class="view-btn active" onclick="toggleView('grid')">🟥</button>
-                        <button class="view-btn" onclick="toggleView('list')">📋</button>
+                        <button class="view-btn active" onclick="toggleView(this,'grid')">🟥</button>
+                        <button class="view-btn" onclick="toggleView(this,'list')">📋</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Contenido Principal -->
+        <!-- Form oculto -->
+        <form method="GET" id="filterForm" style="display:none;">
+            <input type="hidden" name="q" id="hiddenQ" value="{{ request.GET.q|default:'' }}">
+            <input type="hidden" name="ordering" id="hiddenOrdering" value="{{ request.GET.ordering|default:'nombre' }}">
+            <input type="hidden" name="categoria" id="hiddenCategoria" value="{{ request.GET.categoria|default:'' }}">
+            <input type="hidden" name="precio_max" id="hiddenPrecioMax" value="{{ request.GET.precio_max|default:'100.00'|floatformat:2 }}">
+        </form>
+
         <div class="main-content">
             <div class="container">
                 <div class="layout-grid">
@@ -65,104 +79,137 @@
                         <div class="filter-section">
                             <h3>Categorías</h3>
                             <ul class="filter-list">
-                                <li><label><input type="checkbox" value="frutas"> Frutas (12)</label></li>
-                                <li><label><input type="checkbox" value="verduras"> Verduras (10)</label></li>
-                                <li><label><input type="checkbox" value="granos"> Granos (8)</label></li>
-                                <li><label><input type="checkbox" value="organicos"> Orgánicos (15)</label></li>
-                                <li><label><input type="checkbox" value="lacteos"> Lácteos (5)</label></li>
-                                <li><label><input type="checkbox" value="carnes"> Carnes (8)</label></li>
+                                {% for categoria in categorias %}
+                                    <li>
+                                        <label for="chk-categoria-{{ categoria.id|default:forloop.counter }}">
+                                            <input type="checkbox"
+                                                   id="chk-categoria-{{ categoria.id|default:forloop.counter }}"
+                                                   value="{{ categoria.tipo }}"
+                                                   name="categoria"
+                                                   {% if categoria.tipo in selected_categorias %}checked{% endif %}
+                                                   onchange="updateCategoriaFilter()">
+                                            {{ categoria.nombre }} ({{ categoria.product_count }})
+                                        </label>
+                                    </li>
+                                {% empty %}
+                                    <li>No hay categorías disponibles.</li>
+                                {% endfor %}
                             </ul>
                         </div>
                         <div class="filter-section">
                             <h3>Rango de Precio</h3>
                             <div class="price-range">
-                                <input type="range" id="priceRange" min="0" max="50" value="50" onchange="filterByPrice()">
-                                <span class="price-value">$0 - $<span id="priceMax">50</span></span>
+                                <input type="range"
+                                       id="priceRange"
+                                       min="0"
+                                       max="100"
+                                       step="0.01"
+                                       value="{% if request.GET.precio_max %}{{ request.GET.precio_max|floatformat:2 }}{% else %}100.00{% endif %}"
+                                       onchange="updatePriceFilter()">
+                                <span class="price-value">$0 - $<span id="priceMax">{% if request.GET.precio_max %}{{ request.GET.precio_max|floatformat:2 }}{% else %}100.00{% endif %}</span></span>
                             </div>
                         </div>
                         <div class="filter-section">
                             <h3>Características</h3>
                             <ul class="filter-list">
-                                <li><label><input type="checkbox" value="organico"> Orgánico</label></li>
-                                <li><label><input type="checkbox" value="recien"> Recién Cosechado</label></li>
-                                <li><label><input type="checkbox" value="oferta"> En Oferta</label></li>
+                                <li><label for="chk-organico"><input type="checkbox" id="chk-organico" value="organico" onchange="filterByFeatures()"> Orgánico</label></li>
+                                <li><label for="chk-recien"><input type="checkbox" id="chk-recien" value="recien" onchange="filterByFeatures()"> Recién Cosechado (≤7 días)</label></li>
+                                <li><label for="chk-oferta"><input type="checkbox" id="chk-oferta" value="oferta" onchange="filterByFeatures()"> En Oferta</label></li>
                             </ul>
                         </div>
-                        <button class="clear-filters" onclick="clearFilters()">Limpiar Filtros</button>
+                        <button class="clear-filters" onclick="clearAllFilters()">Limpiar Filtros</button>
                     </aside>
 
-                    <!-- Grid de Productos -->
+                    <!-- Productos -->
                     <main class="products-main">
                         <div class="products-grid" id="productsGrid">
-                            <!-- Ejemplo de Productos (expandidos de la home) -->
-                            <div class="producto-card">
-                                <div class="badge">Orgánico</div>
-                                <img src="tomate-cherry.jpg" alt="Tomate Cherry Orgánico">
-                                <h3>Tomate Cherry Orgánico</h3>
-                                <div class="rating">⭐⭐⭐⭐⭐ (45)</div>
-                                <p class="price">$3.50/kg</p>
-                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
-                            </div>
-                            <div class="producto-card">
-                                <div class="badge oferta">Oferta</div>
-                                <img src="aguacate-hass.jpg" alt="Aguacate Hass">
-                                <h3>Aguacate Hass</h3>
-                                <div class="rating">⭐⭐⭐⭐ (32)</div>
-                                <p class="price">$2.80/lb</p>
-                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
-                            </div>
-                            <div class="producto-card">
-                                <img src="lechuga-hidroponica.jpg" alt="Lechuga Hidropónica">
-                                <h3>Lechuga Hidropónica</h3>
-                                <div class="rating">⭐⭐⭐⭐⭐ (28)</div>
-                                <p class="price">$1.50/unidad</p>
-                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
-                            </div>
-                            <div class="producto-card">
-                                <div class="badge">Recién Cosechado</div>
-                                <img src="maiz-dulce.jpg" alt="Maíz Dulce">
-                                <h3>Maíz Dulce</h3>
-                                <div class="rating">⭐⭐⭐⭐ (41)</div>
-                                <p class="price">$4.00/docena</p>
-                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
-                            </div>
-                            <div class="producto-card">
-                                <img src="manzana-fuji.jpg" alt="Manzana Fuji">
-                                <h3>Manzana Fuji</h3>
-                                <div class="rating">⭐⭐⭐⭐⭐ (19)</div>
-                                <p class="price">$2.20/kg</p>
-                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
-                            </div>
-                            <div class="producto-card">
-                                <div class="badge oferta">Oferta</div>
-                                <img src="brocoli-organico.jpg" alt="Brócoli Orgánico">
-                                <h3>Brócoli Orgánico</h3>
-                                <div class="rating">⭐⭐⭐⭐ (25)</div>
-                                <p class="price">$2.50/kg</p>
-                                <button class="btn-add-cart" onclick="addToCart(this)">Agregar al Carrito</button>
-                            </div>
-                            <!-- Más productos... (repite estructura para 48 items en producción) -->
+                            {% for producto in page_obj %}
+                                <div class="producto-card-container">
+                                    <a href="{% url 'productos:detalle_producto' producto.id %}"
+                                       class="producto-card-link {{ producto.categoria.tipo }}{% if producto.categoria.tipo in 'vegetal,frutas' %} organico{% endif %}{% if producto.precio < umbral_oferta %} oferta{% endif %}"
+                                       data-product-id="{{ producto.id }}"
+                                       data-price="{{ producto.precio }}"
+                                       data-peso="{{ producto.peso|default:1.00 }}"
+                                       data-categoria="{{ producto.categoria.tipo }}"
+                                       data-fechacreacion="{{ producto.fecha_creacion|date:'Y-m-d' }}"
+                                       data-stock="{{ producto.stock }}">
+
+                                        {% if producto.categoria.tipo in 'vegetal,frutas' %}
+                                            <div class="badge">Orgánico</div>
+                                        {% endif %}
+                                        {% if producto.precio < umbral_oferta %}
+                                            <div class="badge oferta">Oferta</div>
+                                        {% endif %}
+                                        {% if producto.stock <= 0 %}
+                                            <div class="badge out-stock">Sin Stock</div>
+                                        {% endif %}
+
+                                        {% if producto.imagen %}
+                                            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="producto-imagen" loading="lazy">
+                                        {% else %}
+                                            <img src="{% static 'img/default-producto.jpg' %}" alt="{{ producto.nombre }}" class="producto-imagen" loading="lazy">
+                                        {% endif %}
+
+                                        <div class="producto-info">
+                                            <h3>{{ producto.nombre }}</h3>
+                                            <p class="descripcion-breve">{{ producto.descripcion|truncatewords:10 }}</p>
+                                            <div class="rating">({{ producto.stock }} disponibles)</div>
+                                            {% if producto.peso %}
+                                                <p class="price">${{ producto.precio|floatformat:2 }}/{{ producto.peso|floatformat:2 }}kg</p>
+                                            {% else %}
+                                                <p class="price">${{ producto.precio|floatformat:2 }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+
+                                    <div class="producto-actions">
+                                        {% if producto.stock > 0 %}
+                                            <form method="post" action="{% url 'productos:carrito_ajax' %}" class="cart-form" style="display: contents;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="producto_id" value="{{ producto.id }}">
+                                                <input type="hidden" name="action" value="agregar">
+                                                <input type="hidden" name="cantidad" value="1">
+                                                <button type="submit" class="btn-add-cart" data-producto-nombre="{{ producto.nombre }}">Agregar al Carrito</button>
+                                            </form>
+                                        {% else %}
+                                            <button class="btn-out-stock" disabled>Sin Stock</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="no-results">
+                                    <h3>No hay productos disponibles que coincidan con los filtros.</h3>
+                                    <p>Prueba con otros filtros o <a href="{% url 'productos:home' %}">regresa al inicio</a>.</p>
+                                </div>
+                            {% endfor %}
                         </div>
 
-                        <!-- Paginación -->
-                        <div class="pagination">
-                            <button class="page-btn" onclick="changePage(-1)">Anterior</button>
-                            <span class="page-numbers">
-                                <button class="page-num active" onclick="changePage(1)">1</button>
-                                <button class="page-num" onclick="changePage(2)">2</button>
-                                <button class="page-num" onclick="changePage(3)">3</button>
-                                <span>...</span>
-                                <button class="page-num" onclick="changePage(5)">5</button>
-                            </span>
-                            <button class="page-btn" onclick="changePage(1)">Siguiente</button>
-                        </div>
+                        {% if is_paginated %}
+                            <div class="pagination">
+                                {% if page_obj.has_previous %}
+                                    <a href="#" class="page-btn" onclick="goToPage('{{ page_obj.previous_page_number }}')">Anterior</a>
+                                {% endif %}
+                                <span class="page-numbers">
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <button class="page-num active">{{ num }}</button>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <button class="page-num" onclick="goToPage('{{ num }}')">{{ num }}</button>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                                {% if page_obj.has_next %}
+                                    <a href="#" class="page-btn" onclick="goToPage('{{ page_obj.next_page_number }}')">Siguiente</a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </main>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer (reutiliza de home) -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <p>&copy; 2025 biomeMarket. Todos los derechos reservados.</p>
@@ -170,189 +217,164 @@
     </footer>
 
     <script>
-        // Búsqueda global mejorada - Filtra productos en tiempo real
-        let searchTimeout;
-        document.getElementById('globalSearch').addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const query = this.value.toLowerCase().trim();
-                filterProductsBySearch(query);
-            }, 300); // Debounce para evitar filtrados excesivos
+    const CARRITO_AJAX_URL = '{% url "productos:carrito_ajax" %}';
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            for (const c of document.cookie.split(';')) {
+                const cookie = c.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue || '';
+    }
+
+    const hiddenQ = document.getElementById('hiddenQ');
+    const hiddenOrdering = document.getElementById('hiddenOrdering');
+    const hiddenCategoria = document.getElementById('hiddenCategoria');
+    const hiddenPrecioMax = document.getElementById('hiddenPrecioMax');
+    const globalSearch = document.getElementById('globalSearch');
+    const productsMain = document.querySelector('.products-main');
+
+    async function applyFilters(event=null, page=null) {
+        if (event) event.preventDefault();
+        const params = new URLSearchParams();
+        params.set('q', hiddenQ.value);
+        params.set('ordering', hiddenOrdering.value);
+        params.set('categoria', hiddenCategoria.value);
+        params.set('precio_max', hiddenPrecioMax.value);
+        if (page) params.set('page', page);
+        fetch(`${window.location.pathname}?${params.toString()}`, {
+            headers: {'X-Requested-With':'XMLHttpRequest'}
+        }).then(r => r.json()).then(data => {
+            productsMain.innerHTML = data.html;
+            initializeCartHandlers();
+            filterByFeatures();
+        }).catch(e => console.error(e));
+    }
+
+    let searchTimeout;
+    globalSearch.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            hiddenQ.value = this.value.trim();
+            applyFilters();
+        }, 300);
+    });
+
+    function updateOrdering() {
+        hiddenOrdering.value = document.getElementById('sortSelect').value;
+        applyFilters();
+    }
+
+    function updateCategoriaFilter() {
+        const checked = document.querySelectorAll('input[name="categoria"]:checked');
+        hiddenCategoria.value = Array.from(checked).map(cb => cb.value.trim()).join(',');
+        applyFilters();
+    }
+
+    function updatePriceFilter() {
+        const range = document.getElementById('priceRange');
+        const value = parseFloat(range.value).toFixed(2);
+        document.getElementById('priceMax').textContent = value;
+        hiddenPrecioMax.value = value;
+        applyFilters();
+    }
+
+    function goToPage(p) { applyFilters(null, p); }
+
+    function toggleView(btn, view) {
+        const grid = document.getElementById('productsGrid');
+        grid.classList.toggle('list-view', view === 'list');
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function filterByFeatures() {
+        const features = {
+            organico: document.getElementById('chk-organico')?.checked,
+            recien: document.getElementById('chk-recien')?.checked,
+            oferta: document.getElementById('chk-oferta')?.checked
+        };
+        const cards = document.querySelectorAll('.producto-card-link');
+        cards.forEach(card => {
+            let ok = true;
+            if (features.organico && !card.classList.contains('organico')) ok = false;
+            if (features.oferta && !card.classList.contains('oferta')) ok = false;
+            if (features.recien) {
+                const d = new Date(card.dataset.fechacreacion);
+                const diff = (Date.now() - d.getTime()) / (1000*60*60*24);
+                if (diff > 7) ok = false;
+            }
+            card.closest('.producto-card-container').style.display = ok ? 'block':'none';
         });
+    }
 
-        function filterProductsBySearch(query) {
-            const cards = document.querySelectorAll('.producto-card');
-            let visibleCount = 0;
+    function clearAllFilters() {
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.getElementById('priceRange').value = 100;
+        document.getElementById('priceMax').textContent = '100.00';
+        globalSearch.value = '';
+        hiddenQ.value = '';
+        hiddenOrdering.value = 'nombre';
+        hiddenCategoria.value = '';
+        hiddenPrecioMax.value = '100.00';
+        document.getElementById('sortSelect').value = 'nombre';
+        applyFilters();
+    }
 
-            cards.forEach(card => {
-                const name = card.querySelector('h3').textContent.toLowerCase();
-                const price = card.querySelector('.price').textContent.toLowerCase();
-                const isMatch = query === '' || 
-                               name.includes(query) || 
-                               price.includes(query);
-
-                if (isMatch) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            // Actualizar contador de resultados
-            const resultsEl = document.querySelector('.results-count');
-            if (resultsEl) {
-                resultsEl.textContent = `Mostrando ${visibleCount} ${visibleCount === 1 ? 'producto' : 'productos'} de 48`;
-            }
-
-            // Ocultar sidebar si no hay resultados
-            if (visibleCount === 0) {
-                showNoResults();
-            } else {
-                hideNoResults();
-            }
-        }
-
-        // Función para mostrar mensaje "No hay resultados"
-        function showNoResults() {
-            let noResults = document.getElementById('noResults');
-            if (!noResults) {
-                noResults = document.createElement('div');
-                noResults.id = 'noResults';
-                noResults.className = 'no-results';
-                noResults.innerHTML = `
-                    <div class="no-results-content">
-                        <div class="no-results-icon">🔍</div>
-                        <h3>No se encontraron productos</h3>
-                        <p>Intenta con otra palabra clave o categoría.</p>
-                        <button class="clear-search" onclick="clearSearch()">Limpiar Búsqueda</button>
-                    </div>
-                `;
-                document.getElementById('productsGrid').appendChild(noResults);
-            }
-            noResults.style.display = 'block';
-        }
-
-        // Ocultar mensaje de no resultados
-        function hideNoResults() {
-            const noResults = document.getElementById('noResults');
-            if (noResults) {
-                noResults.style.display = 'none';
-            }
-        }
-
-        // Limpiar búsqueda
-        function clearSearch() {
-            document.getElementById('globalSearch').value = '';
-            filterProductsBySearch('');
-        }
-
-        // Integrar con filtros existentes (opcional - combina con checkboxes)
-        document.addEventListener('change', function(e) {
-            if (e.target.type === 'checkbox' || e.target.id === 'priceRange') {
-                filterProductsByFilters();
-            }
+    function initializeCartHandlers() {
+        document.querySelectorAll('.cart-form').forEach(form => {
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                handleCartAction(form);
+            }, { once:true });
         });
-
-        function filterProductsByFilters() {
-            const query = document.getElementById('globalSearch').value.toLowerCase().trim();
-            const selectedCategories = Array.from(document.querySelectorAll('.filter-list input[type="checkbox"]:checked'))
-                .map(cb => cb.value);
-            const maxPrice = parseFloat(document.getElementById('priceRange').value);
-            
-            const cards = document.querySelectorAll('.producto-card');
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                let matchesSearch = true;
-                let matchesCategory = selectedCategories.length === 0 || 
-                    selectedCategories.some(cat => card.classList.contains(cat));
-                let matchesPrice = true;
-
-                // Para matchesPrice en producción: extrae precio numérico y compara <= maxPrice
-                // Ejemplo simple: si .price text <= maxPrice (necesita parseo)
-                const priceText = card.querySelector('.price').textContent.replace('$', '').replace('/kg', '').replace('/lb', '').replace('/unidad', '').trim();
-                const priceNum = parseFloat(priceText);
-                if (!isNaN(priceNum)) {
-                    matchesPrice = priceNum <= maxPrice;
-                }
-
-                if (query !== '') {
-                    const name = card.querySelector('h3').textContent.toLowerCase();
-                    const price = card.querySelector('.price').textContent.toLowerCase();
-                    matchesSearch = name.includes(query) || price.includes(query);
-                }
-
-                if (matchesSearch && matchesCategory && matchesPrice) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
+        document.querySelectorAll('.btn-add-cart').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault();
+                const form = btn.closest('form');
+                if (form) handleCartAction(form);
             });
+        });
+    }
 
-            // Actualizar contador
-            document.querySelector('.results-count').textContent = `Mostrando ${visibleCount} ${visibleCount === 1 ? 'producto' : 'productos'} de 48`;
-
-            if (visibleCount === 0) {
-                showNoResults();
+    async function handleCartAction(form) {
+        const btn = form.querySelector('.btn-add-cart');
+        const original = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Agregando...';
+        try {
+            const fd = new FormData(form);
+            fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+            const r = await fetch(CARRITO_AJAX_URL, {
+                method:'POST',
+                body: fd,
+                headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':getCookie('csrftoken')}
+            });
+            const data = await r.json();
+            if (data.success) {
+                const cartCount = document.querySelector('.cart-count');
+                if (cartCount) cartCount.textContent = data.total_items || 0;
+                btn.textContent = '¡Agregado!';
             } else {
-                hideNoResults();
+                btn.textContent = 'Error';
             }
+        } catch(e) {
+            btn.textContent = 'Error';
+        } finally {
+            setTimeout(() => { btn.disabled = false; btn.textContent = original; }, 1500);
         }
+    }
 
-        function filterByPrice() {
-            const range = document.getElementById('priceRange');
-            document.getElementById('priceMax').textContent = range.value;
-            filterProductsByFilters();
-        }
-
-        // Actualizar función clearFilters para incluir búsqueda
-        function clearFilters() {
-            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            document.getElementById('priceRange').value = 50;
-            document.getElementById('globalSearch').value = '';
-            filterProductsBySearch(''); // Reset a todos visibles
-        }
-
-        // Otras funciones básicas (de la versión anterior)
-        function sortProducts() {
-            const select = document.getElementById('sortSelect');
-            // Lógica de ordenamiento (ej: reordenar grid basado en data-price, etc.)
-            // En producción: usa Array.sort() en cards y re-append
-            console.log('Ordenando por: ' + select.value); // Placeholder
-        }
-
-        function toggleView(view) {
-            const grid = document.getElementById('productsGrid');
-            if (view === 'list') {
-                grid.classList.add('list-view');
-            } else {
-                grid.classList.remove('list-view');
-            }
-            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-
-        function addToCart(btn) {
-            const cartCount = document.querySelector('.cart-count');
-            let count = parseInt(cartCount.textContent) + 1;
-            cartCount.textContent = count;
-            btn.textContent = '¡Agregado!';
-            btn.style.background = '#45a049';
-            setTimeout(() => {
-                btn.textContent = 'Agregar al Carrito';
-                btn.style.background = '#4CAF50';
-            }, 2000);
-        }
-
-        function changePage(direction) {
-            // Lógica de paginación (carga dinámica en producción)
-            console.log('Cambiando página: ' + direction);
-        }
-
-        // Inicializar
-        filterProductsBySearch(''); // Muestra todos al cargar
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeCartHandlers();
+        filterByFeatures();
+    });
     </script>
 </body>
 </html>
