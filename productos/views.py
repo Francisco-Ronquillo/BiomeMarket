@@ -37,6 +37,14 @@ class HomeView(TemplateView):
                 context['usuario'] = Usuario.objects.get(id=usuario_id)
             except Usuario.DoesNotExist:
                 context['usuario_autenticado'] = False
+        # Preparar datos para el widget/chatbot en JavaScript
+        nombre_usuario = ''
+        if context.get('usuario'):
+            nombre_usuario = getattr(context['usuario'], 'nombre', '') or ''
+        context['bm_user_data'] = {
+            'authenticated': context['usuario_autenticado'],
+            'name': nombre_usuario
+        }
         return context
 class CartView(TemplateView):
     template_name = 'carrito.html'

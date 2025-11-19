@@ -23,6 +23,10 @@
                     <p>Inicia sesión para continuar</p>
                 </div>
 
+                {% if error %}
+                <div class="form-error" style="color:#b00020;margin-bottom:12px;">{{ error }}</div>
+                {% endif %}
+
                 <!-- Formulario de Login -->
                 <form class="signin-form" id="signinForm" method="post">
                     {% csrf_token %}

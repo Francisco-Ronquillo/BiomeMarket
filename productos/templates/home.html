@@ -257,7 +257,7 @@
             </div>
         </div>
     </footer>
-</body>
+
 <script>
 function goToCategoria(tipoCategoria) {
     // Redirige al listado con filtro pre-seleccionado
@@ -266,4 +266,17 @@ function goToCategoria(tipoCategoria) {
     window.location.href = url;
 }
 </script>
+<!-- Chatbot widget -->
+<div id="bm-chatbot-root"></div>
+{{ bm_user_data|json_script:"bm_user_data" }}
+<script>
+    // Carga segura del JSON generado por json_script
+    try {
+        window.BM_USER = JSON.parse(document.getElementById('bm_user_data').textContent || '{}');
+    } catch (e) {
+        window.BM_USER = { authenticated: false, name: '' };
+    }
+</script>
+<script src="{% static 'JS/chatbot.js' %}"></script>
+</body>
 </html>

@@ -10,6 +10,7 @@ class LoginView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        return context
     def post(self, request, *args, **kwargs):
         correo = request.POST.get('email')
         contraseña_plana = request.POST.get('password')
@@ -21,7 +22,7 @@ class LoginView(TemplateView):
         except Usuario.DoesNotExist:
             context = self.get_context_data()
             context['error'] = 'Correo o contraseña incorrectos.'
-        return context
+            return self.render_to_response(context)
 class SignupView(CreateView):
     template_name = 'signUp.html'
     form_class = UsuarioForm
@@ -44,4 +45,3 @@ class LogoutView(View):
     def get(self, request):
         request.session.flush()
         return redirect('productos:home')
-
