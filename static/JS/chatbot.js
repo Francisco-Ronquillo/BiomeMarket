@@ -7,19 +7,44 @@
   // CSS rápido
   const style = document.createElement('style');
   style.innerHTML = `
-    .bm-chatbot-button{position:fixed;right:20px;bottom:20px;background:#2b8a3e;color:#fff;border-radius:50%;width:60px;height:60px;border:none;cursor:pointer;z-index:9999;font-size:24px}
-    .bm-chatbot-panel{position:fixed;right:20px;bottom:90px;width:320px;height:420px;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:9999;display:flex;flex-direction:column;overflow:hidden}
-    .bm-chatbot-header{background:#2b8a3e;color:#fff;padding:10px;font-weight:600}
-    .bm-chatbot-messages{flex:1;padding:10px;overflow:auto;font-size:14px}
-    .bm-chatbot-input{display:flex;padding:8px;border-top:1px solid #eee}
-    .bm-chatbot-input input{flex:1;padding:8px;border:1px solid #ddd;border-radius:6px}
-    .bm-chatbot-input button{margin-left:8px;padding:8px 12px;background:#2b8a3e;color:#fff;border:none;border-radius:6px}
-    .bm-msg{margin-bottom:10px}
-    .bm-msg.user{text-align:right}
-    .bm-msg .bubble{display:inline-block;padding:8px 10px;border-radius:8px;max-width:85%}
-    .bm-msg.user .bubble{background:#e6ffe9}
-    .bm-msg.bot .bubble{background:#f1f1f1}
-    .bm-product-item{border:1px solid #eee;padding:8px;margin:6px 0;border-radius:6px;display:flex;justify-content:space-between;align-items:center}
+    :root{--bm-accent:#1f7a4c;--bm-accent-2:#2b8a3e;--bm-bg:#ffffff;--bm-ghost:#f3f5f7;--bm-text:#222;--bm-muted:#6b7280}
+    .bm-chatbot-button{position:fixed;right:24px;bottom:24px;background:linear-gradient(135deg,var(--bm-accent-2),var(--bm-accent));color:#fff;border-radius:14px;width:64px;height:64px;border:none;cursor:pointer;z-index:9999;font-size:26px;box-shadow:0 10px 30px rgba(15,23,42,0.25);display:flex;align-items:center;justify-content:center;transition:transform .18s ease}
+    .bm-chatbot-button:hover{transform:translateY(-3px) scale(1.03)}
+    .bm-chatbot-panel{position:fixed;right:24px;bottom:100px;width:360px;max-width:calc(100% - 48px);height:520px;background:var(--bm-bg);border-radius:14px;box-shadow:0 18px 48px rgba(15,23,42,0.25);z-index:9999;display:flex;flex-direction:column;overflow:hidden;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    .bm-chatbot-header{display:flex;align-items:center;gap:10px;padding:14px 14px;background:linear-gradient(90deg,rgba(43,138,62,0.06),transparent);border-bottom:1px solid rgba(15,23,42,0.04)}
+    .bm-chatbot-brand{display:flex;align-items:center;gap:10px}
+    .bm-chatbot-avatar{width:40px;height:40px;border-radius:8px;background:var(--bm-accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;box-shadow:0 6px 18px rgba(15,23,42,0.12)}
+    .bm-chatbot-title{font-weight:600;color:var(--bm-text);font-size:15px}
+    .bm-chatbot-sub{font-size:12px;color:var(--bm-muted)}
+    .bm-chatbot-actions{margin-left:auto;display:flex;gap:8px}
+    .bm-chatbot-actions button{background:#fff;border:1px solid rgba(15,23,42,0.06);padding:6px 10px;border-radius:8px;color:var(--bm-accent-2);cursor:pointer;font-weight:600}
+    .bm-chatbot-messages{flex:1;padding:16px;overflow:auto;background:linear-gradient(180deg,var(--bm-ghost),transparent);font-size:14px}
+    .bm-chatbot-input{display:flex;padding:12px;border-top:1px solid rgba(15,23,42,0.04);gap:8px;background:transparent}
+    .bm-chatbot-input input{flex:1;padding:10px;border:1px solid rgba(15,23,42,0.06);border-radius:10px;outline:none;background:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,0.6)}
+    .bm-chatbot-input button{margin-left:0;padding:10px 14px;background:var(--bm-accent);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:700}
+    .bm-options{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border-top:1px solid rgba(15,23,42,0.04);background:transparent}
+    .bm-option{flex:1 1 48%;padding:10px 12px;background:linear-gradient(90deg,var(--bm-accent-2),var(--bm-accent));color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:700;text-align:center}
+    .bm-option.ghost{background:#fff;color:var(--bm-accent-2);border:1px solid rgba(15,23,42,0.06)}
+    .bm-auth-actions{display:flex;gap:8px;margin-top:10px}
+    .bm-auth-btn{flex:1;padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+    .bm-auth-btn.primary{background:var(--bm-accent);color:#fff}
+    .bm-auth-btn.secondary{background:#fff;border:1px solid rgba(15,23,42,0.06);color:var(--bm-accent-2)}
+    .bm-msg{margin-bottom:12px;display:flex}
+    .bm-msg.user{justify-content:flex-end}
+    .bm-msg .bubble{display:inline-block;padding:10px 14px;border-radius:12px;max-width:78%;line-height:1.3;box-shadow:0 6px 18px rgba(11,15,21,0.06)}
+    .bm-msg.user .bubble{background:linear-gradient(90deg,var(--bm-accent),var(--bm-accent-2));color:#fff;border-bottom-right-radius:6px}
+    .bm-msg.bot .bubble{background:#fff;color:var(--bm-text);border-bottom-left-radius:6px;border:1px solid rgba(15,23,42,0.04)}
+    .bm-msg .meta{display:block;font-size:11px;color:var(--bm-muted);margin-top:6px}
+    .bm-product-item{border-radius:10px;padding:10px;margin:10px 0;background:#fff;border:1px solid rgba(15,23,42,0.04);display:flex;gap:12px;align-items:center}
+    .bm-product-item .info{flex:1}
+    .bm-product-item .info strong{display:block;font-size:14px;color:var(--bm-text)}
+    .bm-product-item .info small{color:var(--bm-muted);font-size:12px}
+    .bm-product-item button{background:transparent;border:1px solid var(--bm-accent-2);color:var(--bm-accent-2);padding:6px 10px;border-radius:8px;cursor:pointer}
+    .bm-product-item .price{font-weight:700;color:var(--bm-accent-2)}
+    /* scrollbar ligero */
+    .bm-chatbot-messages::-webkit-scrollbar{width:8px}
+    .bm-chatbot-messages::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(15,23,42,0.12),rgba(15,23,42,0.06));border-radius:8px}
+    @media(max-width:420px){.bm-chatbot-panel{right:12px;left:12px;width:auto;height:60vh}}
   `;
   document.head.appendChild(style);
 
@@ -41,10 +66,28 @@
   panel.className='bm-chatbot-panel';
   panel.style.display='none';
   panel.innerHTML = `
-    <div class="bm-chatbot-header">Asistente BiomeMarket <button id="bm-open-cart" style="float:right;background:#fff;color:#2b8a3e;border:none;padding:6px 8px;border-radius:6px;cursor:pointer">Carrito</button></div>
+    <div class="bm-chatbot-header">
+      <div class="bm-chatbot-brand">
+        <div class="bm-chatbot-avatar">BM</div>
+        <div>
+          <div class="bm-chatbot-title">Asistente BiomeMarket</div>
+          <div class="bm-chatbot-sub">Ayuda rápida para tus compras</div>
+        </div>
+      </div>
+      <div class="bm-chatbot-actions">
+        <button id="bm-close-panel" aria-label="Cerrar">✕</button>
+      </div>
+    </div>
     <div class="bm-chatbot-messages" id="bm-messages"></div>
-    <div class="bm-chatbot-input">
-      <input id="bm-input" placeholder="Escribe algo... (ej: buscar tomate, ver mi carrito)"> 
+    <div class="bm-options" id="bm-options">
+      <button class="bm-option" id="bm-opt-browse">Buscar productos</button>
+      <button class="bm-option ghost" id="bm-opt-popular">Populares</button>
+      <button class="bm-option" id="bm-opt-offers">Ofertas</button>
+      <button class="bm-option ghost" id="bm-opt-cart-small">Ver carrito</button>
+    </div>
+    <!-- fallback input (se mantiene escondido por compatibilidad) -->
+    <div class="bm-chatbot-input" style="display:none">
+      <input id="bm-input" placeholder="Escribe algo..."> 
       <button id="bm-send">Enviar</button>
     </div>
   `;
@@ -53,6 +96,11 @@
   const messages = panel.querySelector('#bm-messages');
   const input = panel.querySelector('#bm-input');
   const send = panel.querySelector('#bm-send');
+  const optionsContainer = panel.querySelector('#bm-options');
+  const optBrowse = panel.querySelector('#bm-opt-browse');
+  const optPopular = panel.querySelector('#bm-opt-popular');
+  const optOffers = panel.querySelector('#bm-opt-offers');
+  const optCartSmall = panel.querySelector('#bm-opt-cart-small');
 
   btn.addEventListener('click', ()=>{
     panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
@@ -60,25 +108,60 @@
 
   function appendMessage(text, who='bot'){ 
     const div = document.createElement('div');
-    div.className = 'bm-msg '+who;
-    const bubble = document.createElement('div');
-    bubble.className='bubble';
-    bubble.textContent = text;
-    div.appendChild(bubble);
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
+      div.className = 'bm-msg '+who;
+      const bubble = document.createElement('div');
+      bubble.className='bubble';
+      // allow simple HTML (like small tags) for emphasis if needed
+      bubble.innerHTML = text;
+      div.appendChild(bubble);
+      // meta (timestamp)
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const now = new Date();
+      meta.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      bubble.appendChild(meta);
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
   }
+
+    function showAuthRequired(){
+      // Si ya mostramos el prompt recientemente, evitar duplicados
+      const existing = messages.querySelector('.bm-auth-prompt');
+      if(existing) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'bm-auth-prompt';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.innerHTML = 'Para usar esta función debes <strong>iniciar sesión</strong> o <strong>registrarte</strong>.';
+      const authActions = document.createElement('div');
+      authActions.className = 'bm-auth-actions';
+      const loginBtn = document.createElement('button');
+      loginBtn.className = 'bm-auth-btn primary';
+      loginBtn.textContent = 'Iniciar sesión';
+      loginBtn.addEventListener('click', ()=>{ window.location.href = '/accounts/signin/'; });
+      const signupBtn = document.createElement('button');
+      signupBtn.className = 'bm-auth-btn secondary';
+      signupBtn.textContent = 'Registrarse';
+      signupBtn.addEventListener('click', ()=>{ window.location.href = '/accounts/signup/'; });
+      authActions.appendChild(loginBtn);
+      authActions.appendChild(signupBtn);
+      bubble.appendChild(authActions);
+      wrapper.appendChild(bubble);
+      messages.appendChild(wrapper);
+      messages.scrollTop = messages.scrollHeight;
+    }
 
   function renderProductos(productos){
     if(!productos || productos.length===0){ appendMessage('No encontré productos.', 'bot'); return; }
     productos.forEach(p=>{
       const el = document.createElement('div');
       el.className='bm-product-item';
-      el.innerHTML = `<div><strong>${p.nombre}</strong><div style="font-size:12px;color:#666">Precio: ${p.precio} • Stock: ${p.stock} • id:${p.id}</div></div>`;
+      el.innerHTML = `<div class="info"><strong>${p.nombre}</strong><small>Precio: $${p.precio} • Stock: ${p.stock} • id:${p.id}</small></div><div style="text-align:right"><div class="price">$${p.precio}</div></div>`;
       const btnAdd = document.createElement('button');
-      btnAdd.textContent='Agregar';
+      btnAdd.textContent='Ver';
       btnAdd.addEventListener('click', ()=>{
-        sendMessage(`agregar 1 ${p.id}`); // formato simple: agregar 1 <id>
+        // redirigir al detalle del producto si existe ruta
+        window.location.href = `/detalle_producto/${p.id}/`;
       });
       el.appendChild(btnAdd);
       messages.appendChild(el);
@@ -123,18 +206,46 @@
     }
   }
 
-  send.addEventListener('click', ()=>sendMessage(input.value));
-  input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ sendMessage(input.value); } });
+  if(send){ send.addEventListener('click', ()=>sendMessage(input ? input.value : '')); }
+  if(input){ input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ sendMessage(input.value); } }); }
 
-  // botón para ir al carrito desde el widget
-  const openCartBtn = panel.querySelector('#bm-open-cart');
-  if(openCartBtn){
-    openCartBtn.addEventListener('click', ()=>{
-      try{ window.location.href = '/carrito/'; }catch(e){ console.error('No se pudo redirigir al carrito', e); }
+  // botón cerrar panel (header)
+  const closeBtn = panel.querySelector('#bm-close-panel');
+  if(closeBtn){
+    closeBtn.addEventListener('click', ()=>{ panel.style.display = 'none'; });
+  }
+
+  // Opciones rápidas (botones) con verificación de autenticación
+  function isAuthenticated(){ try{ return Boolean(window.BM_USER && window.BM_USER.authenticated); }catch(e){ return false; } }
+
+  if(optBrowse){
+    optBrowse.addEventListener('click', ()=>{
+      if(!isAuthenticated()){ showAuthRequired(); return; }
+      sendMessage('buscar productos');
+    });
+  }
+  if(optPopular){
+    optPopular.addEventListener('click', ()=>{
+      if(!isAuthenticated()){ showAuthRequired(); return; }
+      sendMessage('productos populares');
+    });
+  }
+  if(optOffers){
+    optOffers.addEventListener('click', ()=>{
+      if(!isAuthenticated()){ showAuthRequired(); return; }
+      sendMessage('mostrar ofertas');
+    });
+  }
+  if(optCartSmall){
+    optCartSmall.addEventListener('click', ()=>{
+      if(!isAuthenticated()){ showAuthRequired(); return; }
+      try{ window.location.href = '/carrito/'; }catch(e){ sendMessage('ver mi carrito'); }
     });
   }
 
+  // (Se eliminó el botón 'Carrito' del header; la acción para abrir carrito se mantiene en las opciones inferiores)
+
   // Mensaje inicial con saludo muy amable
-  appendMessage('¡Hola! Bienvenido a BiomeMarket — es un gusto atenderte. Puedo buscar productos y mostrar tu carrito. Usa ejemplos como: "buscar tomate" o "ver mi carrito". También puedes pulsar el botón "Carrito" arriba para ir directamente al carrito de compras.', 'bot');
+  appendMessage('¡Hola! Bienvenido a BiomeMarket — elige una opción para comenzar: Buscar productos, Ver carrito, Ver ofertas o Populares.', 'bot');
 
 })();
