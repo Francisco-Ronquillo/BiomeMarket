@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carrito de Compras - biomeMarket</title>
-    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+    <link rel="stylesheet" href="{% static 'CSS/site.css' %}">
+    <link rel="stylesheet" href="{% static 'CSS/cart.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -12,12 +13,12 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <a href="{% url 'productos:list_product' %}">
+                <a href="{% url 'productos:home' %}">
                     <img src="{% static 'img/logo.png' %}" alt="biomeMarket Logo">
                 </a>
             </div>
             <div class="cart-nav">
-                <a href="{% url 'productos:list_product' %}" class="btn-continue-shopping">← Continuar Comprando</a>
+                <a href="{% url 'productos:home' %}" class="btn-continue-shopping">← Continuar Comprando</a>
             </div>
         </div>
     </nav>

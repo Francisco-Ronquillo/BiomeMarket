@@ -79,15 +79,9 @@
       </div>
     </div>
     <div class="bm-chatbot-messages" id="bm-messages"></div>
-    <div class="bm-options" id="bm-options">
-      <button class="bm-option" id="bm-opt-browse">Buscar productos</button>
-      <button class="bm-option ghost" id="bm-opt-popular">Populares</button>
-      <button class="bm-option" id="bm-opt-offers">Ofertas</button>
-      <button class="bm-option ghost" id="bm-opt-cart-small">Ver carrito</button>
-    </div>
-    <!-- fallback input (se mantiene escondido por compatibilidad) -->
-    <div class="bm-chatbot-input" style="display:none">
-      <input id="bm-input" placeholder="Escribe algo..."> 
+    <!-- Opciones ahora presentadas como lista en el chat; mantenemos input visible para modo listado -->
+    <div class="bm-chatbot-input" style="display:flex">
+      <input id="bm-input" placeholder="Escribe el número o tu opción..."> 
       <button id="bm-send">Enviar</button>
     </div>
   `;
@@ -169,9 +163,37 @@
     messages.scrollTop = messages.scrollHeight;
   }
 
-  async function sendMessage(msg){
-    if(!msg || !msg.trim()) return;
+  function normalize(text){ return (text||'').toString().trim().toLowerCase(); }
+
+  function handleChoiceOrMessage(raw){
+    const msg = (raw||'').toString().trim();
+    if(!msg) return;
+    // mostrar lo que el usuario escribió
     appendMessage(msg, 'user');
+    // intentar interpretar como elección localmente (número o texto clave)
+    const n = msg.match(/^\s*(\d+)\s*$/);
+    const lower = normalize(msg);
+    // mapa de opciones: 1=buscar,2=populares,3=ofertas,4=carrito
+    if(n){
+      const val = parseInt(n[1],10);
+      if(val===1){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('buscar productos', {dontAppendUser:true}); return; }
+      if(val===2){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('productos populares', {dontAppendUser:true}); return; }
+      if(val===3){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('mostrar ofertas', {dontAppendUser:true}); return; }
+      if(val===4){ if(!isAuthenticated()){ showAuthRequired(); return; } window.location.href='/carrito/'; return; }
+    }
+    // texto libre: buscar palabras claves
+    if(lower.includes('buscar') || lower.includes('buscar productos') || lower.includes('buscar producto')){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('buscar productos', {dontAppendUser:true}); return; }
+    if(lower.includes('popular')){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('productos populares', {dontAppendUser:true}); return; }
+    if(lower.includes('oferta')){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('mostrar ofertas', {dontAppendUser:true}); return; }
+    if(lower.includes('carrit')){ if(!isAuthenticated()){ showAuthRequired(); return; } window.location.href='/carrito/'; return; }
+    // si no coincide con ninguna opción conocida, enviar al backend como mensaje libre
+    sendMessage(msg, {dontAppendUser:true});
+  }
+
+  async function sendMessage(msg, opts){
+    opts = opts || {};
+    if(!msg || !msg.trim()) return;
+    if(!opts.dontAppendUser){ appendMessage(msg, 'user'); }
     input.value='';
     try{
       const csrftoken = getCookie('csrftoken');
@@ -206,8 +228,8 @@
     }
   }
 
-  if(send){ send.addEventListener('click', ()=>sendMessage(input ? input.value : '')); }
-  if(input){ input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ sendMessage(input.value); } }); }
+  if(send){ send.addEventListener('click', ()=>handleChoiceOrMessage(input ? input.value : '')); }
+  if(input){ input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ handleChoiceOrMessage(input.value); } }); }
 
   // botón cerrar panel (header)
   const closeBtn = panel.querySelector('#bm-close-panel');
@@ -245,7 +267,7 @@
 
   // (Se eliminó el botón 'Carrito' del header; la acción para abrir carrito se mantiene en las opciones inferiores)
 
-  // Mensaje inicial con saludo muy amable
-  appendMessage('¡Hola! Bienvenido a BiomeMarket — elige una opción para comenzar: Buscar productos, Ver carrito, Ver ofertas o Populares.', 'bot');
+  // Mensaje inicial: listar opciones numeradas para que el usuario escriba su elección
+  appendMessage('¡Hola! Bienvenido a BiomeMarket — elige una opción para comenzar:<br><br>1) Buscar productos<br>2) Populares<br>3) Ofertas<br>4) Ver carrito<br><br>Escribe el número de la opción o escribe el nombre (ej. "1" o "buscar").', 'bot');
 
 })();

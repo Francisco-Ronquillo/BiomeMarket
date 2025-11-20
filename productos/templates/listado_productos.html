@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todos los Productos - biomeMarket</title>
-    <link rel="stylesheet" href="{% static 'css/all-products.css' %}">
+    <link rel="stylesheet" href="{% static 'CSS/site.css' %}">
+    <link rel="stylesheet" href="{% static 'CSS/all-products.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -13,7 +14,9 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <img src="{% static 'img/logo.png' %}" alt="biomeMarket Logo">
+                <a href="{% url 'productos:home' %}">
+                    <img src="{% static 'img/logo.png' %}" alt="biomeMarket Logo">
+                </a>
             </div>
             <div class="nav-search">
                 <input type="text" placeholder="Buscar productos..." id="globalSearch" value="{{ request.GET.q|default:'' }}">
@@ -237,7 +240,6 @@
     const hiddenOrdering = document.getElementById('hiddenOrdering');
     const hiddenCategoria = document.getElementById('hiddenCategoria');
     const hiddenPrecioMax = document.getElementById('hiddenPrecioMax');
-    const globalSearch = document.getElementById('globalSearch');
     const productsMain = document.querySelector('.products-main');
 
     async function applyFilters(event=null, page=null) {
@@ -265,6 +267,8 @@
             applyFilters();
         }, 300);
     });
+
+    // Note: search handlers are attached inside DOMContentLoaded below to ensure elements exist
 
     function updateOrdering() {
         hiddenOrdering.value = document.getElementById('sortSelect').value;
@@ -374,6 +378,44 @@
     document.addEventListener('DOMContentLoaded', () => {
         initializeCartHandlers();
         filterByFeatures();
+
+        // Attach search button and Enter key handlers after DOM is ready
+        const globalSearchEl = document.getElementById('globalSearch');
+        const searchBtnEl = document.querySelector('.search-btn');
+
+        if (searchBtnEl) {
+            searchBtnEl.addEventListener('click', function(e){
+                e.preventDefault();
+                const q = (globalSearchEl && globalSearchEl.value) ? globalSearchEl.value.trim() : '';
+                const params = new URLSearchParams(window.location.search);
+                if (q) params.set('q', q); else params.delete('q');
+                window.location.href = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '');
+            });
+        }
+
+        if (globalSearchEl) {
+            // permitir focus al hacer clic en el contenedor (por si hay un overlay que capture clicks)
+            const navSearchContainer = document.querySelector('.nav-search');
+            if (navSearchContainer) {
+                // asegurar tabindex para que sea focusable
+                if (!globalSearchEl.hasAttribute('tabindex')) globalSearchEl.setAttribute('tabindex', '0');
+                navSearchContainer.addEventListener('click', function(e){
+                    // si el click viene del botón, no interferimos
+                    if (e.target && e.target.classList && e.target.classList.contains('search-btn')) return;
+                    globalSearchEl.focus();
+                });
+            }
+
+            globalSearchEl.addEventListener('keydown', function(e){
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const q = (this.value || '').trim();
+                    const params = new URLSearchParams(window.location.search);
+                    if (q) params.set('q', q); else params.delete('q');
+                    window.location.href = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '');
+                }
+            });
+        }
     });
     </script>
 </body>
