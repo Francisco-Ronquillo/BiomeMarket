@@ -460,6 +460,46 @@ body {
     margin-bottom: 2rem;
 }
 
+/* Carousel específico para destacados */
+.featured-carousel {
+    position: relative;
+}
+.featured-carousel .producto-grid {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 8px;
+}
+.featured-carousel .producto-card {
+    min-width: 240px;
+    flex: 0 0 auto;
+}
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+}
+.carousel-btn:hover { transform: translateY(-50%) scale(1.03); }
+.carousel-btn.prev { left: -10px; }
+.carousel-btn.next { right: -10px; }
+
+@media (max-width: 768px) {
+    .carousel-btn { width: 36px; height: 36px; }
+    .carousel-btn.prev { left: 4px; }
+    .carousel-btn.next { right: 4px; }
+}
+
 .producto-card {
     background: white;
     border-radius: 15px;

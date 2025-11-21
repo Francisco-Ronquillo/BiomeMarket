@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orden Confirmada</title>
+<link rel="stylesheet" href="{% static 'CSS/site.css' %}">
+</head>
+<body>
+<div class="container" style="max-width:800px;margin:2rem auto;padding:1rem">
+    <h1>Pago recibido</h1>
+    {% if orden %}
+    <p>Gracias por tu compra. Orden: <strong>{{ orden.paypal_order_id }}</strong></p>
+    <p>Monto: <strong>${{ orden.total }} {{ orden.currency }}</strong></p>
+    <p>Estado: <strong>{{ orden.status }}</strong></p>
+    <p>Fecha: <strong>{{ orden.created_at }}</strong></p>
+    <pre style="background:#f7f7f7;padding:8px;border-radius:6px;overflow:auto;max-height:240px">{{ orden.raw_response|json_script:"orden_raw" }}</pre>
+    <a href="{% url 'productos:home' %}" class="btn">Volver al inicio</a>
+    {% else %}
+    <p>No se encontró la orden.</p>
+    <a href="{% url 'productos:home' %}" class="btn">Volver al inicio</a>
+    {% endif %}
+</div>
+</body>
+</html>

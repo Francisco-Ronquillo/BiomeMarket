@@ -43,7 +43,7 @@ class Venta(models.Model):
         ('Cancelada', 'Cancelada'),
     ]
 
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, verbose_name='Usuario')
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, verbose_name='Usuario', null=True, blank=True)
     fecha_venta = models.DateTimeField(default=timezone.now, verbose_name='Fecha de venta')
     total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Total')
     estado = models.CharField(max_length=20, choices=ESTADOS, default='Pendiente', verbose_name='Estado')
@@ -51,7 +51,8 @@ class Venta(models.Model):
     direccion_envio = models.TextField(verbose_name='Dirección de envío')
 
     def __str__(self):
-        return f'Venta {self.id} - {self.usuario.nombre}'
+        usuario_nombre = getattr(self.usuario, 'nombre', 'Invitado') if self.usuario else 'Invitado'
+        return f'Venta {self.id} - {usuario_nombre}'
 
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE, related_name='detalles', verbose_name='Venta')
@@ -66,3 +67,23 @@ class DetalleVenta(models.Model):
 
     def __str__(self):
         return f'{self.producto.nombre} x {self.cantidad}'
+
+
+class Orden(models.Model):
+    STATUS = [
+        ('CREATED', 'Created'),
+        ('CAPTURED', 'Captured'),
+        ('FAILED', 'Failed')
+    ]
+
+    paypal_order_id = models.CharField(max_length=128, unique=True)
+    usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True)
+    guest_email = models.EmailField(null=True, blank=True, verbose_name='Email de invitado')
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=8, default='USD')
+    status = models.CharField(max_length=20, choices=STATUS, default='CREATED')
+    raw_response = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Orden {self.paypal_order_id} - {self.status} - {self.total} {self.currency}'

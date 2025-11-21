@@ -1,0 +1,17 @@
+Gracias por tu compra en {{ site_name }}.
+
+Orden: {{ orden.paypal_order_id }}
+Estado: {{ orden.status }}
+Fecha: {{ orden.created_at }}
+
+Productos:
+{% for it in cart_items %}
+- {{ it.producto.nombre }} x {{ it.cantidad }}: ${{ it.subtotal }}
+{% endfor %}
+
+Total: ${{ orden.total }} {{ orden.currency }}
+
+Si tienes alguna pregunta, responde a este correo.
+
+Gracias,
+El equipo de {{ site_name }}

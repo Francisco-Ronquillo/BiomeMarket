@@ -11,6 +11,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+from pathlib import Path
+try:
+    # cargar variables de entorno desde .env en el BASE_DIR si está presente
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    # dotenv no instalado o .env no encontrado: continuar usando os.environ
+    pass
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -115,6 +124,13 @@ USE_I18N = True
 
 USE_TZ = True
 
+PAYPAL_CLIENT_ID = (
+    "AdWG2Gxl6HLSVJhP11_pSa21Tv3Z5V43NPBfmd-SZNi3FA_6ZURIC5PZGzVrI_J2Le1HDAUhGNb0K_IL"
+)
+PAYPAL_CLIENT_SECRET = (
+    "EKa2mu19WOBbRJ4h2ais743Azx-onadHxF9D9nscZpXbZeoBtTG84INAhCmCALwBP8hjd0i66Qq1_akt"
+)
+PAYPAL_MODE = "sandbox"  # o 'live' dependiendo de tu entorno
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -139,3 +155,14 @@ SESSION_SAVE_EVERY_REQUEST = True
 CART_SESSION_ID = 'biomarket_carrito'
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Email (configura esto para enviar correos reales)
+# Los valores se leen desde variables de entorno por seguridad.
+EMAIL_BACKEND = os.environ.get('DJANGO_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('1', 'true', 'yes')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@biomarket.local')
+
+

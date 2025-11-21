@@ -97,7 +97,22 @@
   const optCartSmall = panel.querySelector('#bm-opt-cart-small');
 
   btn.addEventListener('click', ()=>{
-    panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+    // Al abrir el panel, verificar si el usuario está autenticado.
+    const willShow = panel.style.display === 'none';
+    panel.style.display = willShow ? 'flex' : 'none';
+    if(willShow){
+      if(!isAuthenticated()){
+        // Mostrar prompt de autenticación y deshabilitar entrada/envío
+        showAuthRequired();
+        try{
+          if(input) { input.value = ''; input.placeholder = 'Inicia sesión para usar el asistente'; input.disabled = true; }
+          if(send) send.disabled = true;
+        }catch(e){}
+      } else {
+        // habilitar cuando esté autenticado
+        try{ if(input){ input.disabled = false; input.placeholder = 'Escribe el número o tu opción...'; } if(send) send.disabled = false; }catch(e){}
+      }
+    }
   });
 
   function appendMessage(text, who='bot'){ 
@@ -166,8 +181,12 @@
   function normalize(text){ return (text||'').toString().trim().toLowerCase(); }
 
   function handleChoiceOrMessage(raw){
+    // Requerir autenticación para procesar cualquier mensaje o elección
+    if(!isAuthenticated()){ showAuthRequired(); return; }
     const msg = (raw||'').toString().trim();
     if(!msg) return;
+    // limpiar el input inmediatamente al procesar la elección
+    try{ if(input) input.value = ''; }catch(e){ /* noop */ }
     // mostrar lo que el usuario escribió
     appendMessage(msg, 'user');
     // intentar interpretar como elección localmente (número o texto clave)
@@ -176,14 +195,15 @@
     // mapa de opciones: 1=buscar,2=populares,3=ofertas,4=carrito
     if(n){
       const val = parseInt(n[1],10);
-      if(val===1){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('buscar productos', {dontAppendUser:true}); return; }
-      if(val===2){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('productos populares', {dontAppendUser:true}); return; }
+      if(val===1){ /* Buscar productos: redirigir al listado (no requiere auth) */ window.location.href = '/listado_producto/'; return; }
+      // Opción 2: ir directamente a Productos Destacados (no requiere autenticación)
+      if(val===2){ window.location.href = '/#productos'; return; }
       if(val===3){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('mostrar ofertas', {dontAppendUser:true}); return; }
       if(val===4){ if(!isAuthenticated()){ showAuthRequired(); return; } window.location.href='/carrito/'; return; }
     }
     // texto libre: buscar palabras claves
-    if(lower.includes('buscar') || lower.includes('buscar productos') || lower.includes('buscar producto')){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('buscar productos', {dontAppendUser:true}); return; }
-    if(lower.includes('popular')){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('productos populares', {dontAppendUser:true}); return; }
+    if(lower.includes('buscar') || lower.includes('buscar productos') || lower.includes('buscar producto')){ /* redirigir al listado */ window.location.href = '/listado_producto/'; return; }
+    if(lower.includes('popular')){ /* Ir a la sección de destacados */ window.location.href = '/#productos'; return; }
     if(lower.includes('oferta')){ if(!isAuthenticated()){ showAuthRequired(); return; } sendMessage('mostrar ofertas', {dontAppendUser:true}); return; }
     if(lower.includes('carrit')){ if(!isAuthenticated()){ showAuthRequired(); return; } window.location.href='/carrito/'; return; }
     // si no coincide con ninguna opción conocida, enviar al backend como mensaje libre
@@ -228,8 +248,8 @@
     }
   }
 
-  if(send){ send.addEventListener('click', ()=>handleChoiceOrMessage(input ? input.value : '')); }
-  if(input){ input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ handleChoiceOrMessage(input.value); } }); }
+  if(send){ send.addEventListener('click', ()=>{ if(!isAuthenticated()){ showAuthRequired(); return; } handleChoiceOrMessage(input ? input.value : ''); }); }
+  if(input){ input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ if(!isAuthenticated()){ showAuthRequired(); return; } handleChoiceOrMessage(input.value); } }); }
 
   // botón cerrar panel (header)
   const closeBtn = panel.querySelector('#bm-close-panel');

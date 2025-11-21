@@ -1,0 +1,17 @@
+<html>
+  <body>
+    <h2>Factura - {{ site_name }}</h2>
+    <p>Orden: <strong>{{ orden.paypal_order_id }}</strong></p>
+    <p>Estado: <strong>{{ orden.status }}</strong></p>
+    <p>Fecha: <strong>{{ orden.created_at }}</strong></p>
+    <h3>Productos</h3>
+    <ul>
+      {% for it in cart_items %}
+        <li>{{ it.producto.nombre }} x {{ it.cantidad }} — ${{ it.subtotal }}</li>
+      {% endfor %}
+    </ul>
+    <p><strong>Total: ${{ orden.total }} {{ orden.currency }}</strong></p>
+    <hr>
+    <p>Gracias por tu compra.</p>
+  </body>
+</html>

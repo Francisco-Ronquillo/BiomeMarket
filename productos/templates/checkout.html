@@ -1,10 +1,47 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Checkout - BiomeMarket</title>
+    <link rel="stylesheet" href="{% static 'CSS/site.css' %}">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
 <body>
 
+    <div class="checkout-container" style="max-width:900px;margin:2rem auto;padding:1rem">
+        <h1>Resumen de Compra</h1>
+        {% if cart_items %}
+            <ul style="list-style:none;padding:0;margin:0 0 1rem 0">
+            {% for it in cart_items %}
+                <li style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee">
+                    <div>
+                        <strong>{{ it.producto.nombre }}</strong>
+                        <div style="font-size:.9rem;color:#666">Cantidad: {{ it.cantidad }}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div>${{ it.subtotal|floatformat:2 }}</div>
+                        <div style="font-size:.85rem;color:#666">Unit: ${{ it.precio_unitario|floatformat:2 }}</div>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+            <div style="text-align:right;margin-top:12px;font-size:1.1rem">Total: <strong>${{ cart_total|floatformat:2 }}</strong></div>
+            <form method="post" action="{% url 'productos:paypal_redirect' %}" style="margin-top:18px">
+                {% csrf_token %}
+                {% if not usuario_autenticado %}
+                    <div style="margin:8px 0">
+                        <label for="guest_email" style="display:block;margin-bottom:6px">Correo electrónico (recibirás la factura)</label>
+                        <input id="guest_email" name="guest_email" type="email" required style="padding:8px;width:100%;max-width:360px;border:1px solid #ddd;border-radius:6px">
+                    </div>
+                {% endif %}
+                <button type="submit" class="btn" style="background:#0070ba;color:#fff;padding:10px 16px;border-radius:8px;border:none;cursor:pointer">Pagar con PayPal</button>
+                <a href="{% url 'productos:carrito' %}" class="btn" style="margin-left:8px;padding:10px 16px;border-radius:8px;border:1px solid #ddd;">Volver al carrito</a>
+            </form>
+            
+        {% else %}
+            <p>Tu carrito está vacío. <a href="{% url 'productos:home' %}">Volver al inicio</a></p>
+        {% endif %}
+    </div>
 </body>
 </html>

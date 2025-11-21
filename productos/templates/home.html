@@ -16,11 +16,8 @@
                 <img src="{% static 'img/logo.png' %}" alt="Mi imagen">
             </div>
             <ul class="nav-links">
-                <li><a href="#inicio">Inicio</a></li>
                 <li><a href="#productos">Productos</a></li>
                 <li><a href="#categorias">Categorías</a></li>
-                <li><a href="#nosotros">Nosotros</a></li>
-                <li><a href="#contacto">Contacto</a></li>
             </ul>
             <div class="nav-icons">
                 <a href="{% url 'productos:list_product' %}" class="icon">🔍</a>
@@ -31,6 +28,7 @@
                 {% if usuario_autenticado %}
             <!-- Mostrar cuando está autenticado -->
                     <span class="user-greeting">{{ usuario.nombre }}</span>
+                    <a href="{% url 'productos:mis_compras' %}" class="btn-login" style="margin-right:8px;">Mis Compras</a>
                     <a href="{% url 'accounts:logout' %}" class="btn-login">Cerrar Sesión</a>
                 {% else %}
                 <!-- Mostrar cuando NO está autenticado -->
@@ -78,37 +76,29 @@
     <section class="productos" id="productos">
         <div class="container">
             <h2>Productos Destacados</h2>
-            <div class="producto-grid">
-                <div class="producto-card">
-                    <div class="badge">Orgánico</div>
-                    <img src="producto1.jpg" alt="Producto 1">
-                    <h3>Tomate Cherry Orgánico</h3>
-                    <div class="rating">⭐⭐⭐⭐⭐</div>
-                    <p class="price">$3.50/kg</p>
-                    <button class="btn-add-cart">Agregar al Carrito</button>
-                </div>
-                <div class="producto-card">
-                    <div class="badge oferta">Oferta</div>
-                    <img src="producto2.jpg" alt="Producto 2">
-                    <h3>Aguacate Hass</h3>
+            <div class="featured-carousel">
+                <div class="producto-grid" role="list">
+                {% for producto in productos_destacados %}
+                <div class="producto-card" role="listitem">
+                    {% if producto.peso %}
+                        <div class="badge">Por peso</div>
+                    {% endif %}
+                    {% if producto.imagen %}
+                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+                    {% else %}
+                        <img src="{% static 'img/logo.png' %}" alt="{{ producto.nombre }}">
+                    {% endif %}
+                    <h3>{{ producto.nombre }}</h3>
                     <div class="rating">⭐⭐⭐⭐</div>
-                    <p class="price">$2.80/lb</p>
-                    <button class="btn-add-cart">Agregar al Carrito</button>
+                    <p class="price">${{ producto.precio }} {% if producto.peso %}/kg{% endif %}</p>
+                    <div class="vendidos">Vendidos: {{ producto.total_vendido|default:0 }}</div>
+                    <a class="btn-add-cart" href="{% url 'productos:detalle_producto' producto.id %}">Ver producto</a>
                 </div>
-                <div class="producto-card">
-                    <img src="producto3.jpg" alt="Producto 3">
-                    <h3>Lechuga Hidropónica</h3>
-                    <div class="rating">⭐⭐⭐⭐⭐</div>
-                    <p class="price">$1.50/unidad</p>
-                    <button class="btn-add-cart">Agregar al Carrito</button>
+                {% empty %}
+                <div class="no-destacados">
+                    <p>No hay productos destacados todavía.</p>
                 </div>
-                <div class="producto-card">
-                    <div class="badge">Recién Cosechado</div>
-                    <img src="producto4.jpg" alt="Producto 4">
-                    <h3>Maíz Dulce</h3>
-                    <div class="rating">⭐⭐⭐⭐</div>
-                    <p class="price">$4.00/docena</p>
-                    <button class="btn-add-cart">Agregar al Carrito</button>
+                {% endfor %}
                 </div>
             </div>
         </div>
@@ -200,65 +190,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Newsletter -->
-    <section class="newsletter">
-        <div class="container">
-            <h2>Suscríbete a Nuestro Boletín</h2>
-            <p>Recibe ofertas exclusivas y actualizaciones de productos</p>
-            <form class="newsletter-form">
-                <input type="email" placeholder="Tu correo electrónico">
-                <button type="submit" class="btn btn-primary">Suscribirse</button>
-            </form>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h4>biomeMarket</h4>
-                    <p>Conectando el campo con tu mesa</p>
-                    <div class="social-links">
-                        <a href="#">Facebook</a>
-                        <a href="#">Instagram</a>
-                        <a href="#">WhatsApp</a>
-                    </div>
-                </div>
-                <div class="footer-col">
-                    <h4>Enlaces Rápidos</h4>
-                    <ul>
-                        <li><a href="#">Sobre Nosotros</a></li>
-                        <li><a href="#">Productos</a></li>
-                        <li><a href="#">Productores</a></li>
-                        <li><a href="#">Blog</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Ayuda</h4>
-                    <ul>
-                        <li><a href="#">Preguntas Frecuentes</a></li>
-                        <li><a href="#">Envíos</a></li>
-                        <li><a href="#">Devoluciones</a></li>
-                        <li><a href="#">Contacto</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Legal</h4>
-                    <ul>
-                        <li><a href="#">Términos y Condiciones</a></li>
-                        <li><a href="#">Política de Privacidad</a></li>
-                        <li><a href="#">Certificaciones</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 biomeMarket. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </footer>
-
 <script>
 function goToCategoria(tipoCategoria) {
     // Redirige al listado con filtro pre-seleccionado

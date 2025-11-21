@@ -13,9 +13,9 @@ def chat_api(request):
 
     - Recibe JSON { message: '...' }
     - Responde JSON con distintos tipos:
-      - { type: 'productos', productos: [...] }
-      - { type: 'carrito', items: [...], total: 0.0 }
-      - { type: 'texto', message: '...' }
+    - { type: 'productos', productos: [...] }
+    - { type: 'carrito', items: [...], total: 0.0 }
+    - { type: 'texto', message: '...' }
     """
     try:
         payload = json.loads(request.body.decode('utf-8') or '{}')
@@ -81,7 +81,7 @@ def chat_api(request):
                 cantidad = 1
 
         if not producto:
-              return JsonResponse({'type': 'texto', 'message': 'No pude identificar el producto a agregar. Puedes decir "agrega 2 tomates" o "agrega tomate".'})
+            return JsonResponse({'type': 'texto', 'message': 'No pude identificar el producto a agregar. Puedes decir "agrega 2 tomates" o "agrega tomate".'})
 
         carrito = Carrito(request)
         try:

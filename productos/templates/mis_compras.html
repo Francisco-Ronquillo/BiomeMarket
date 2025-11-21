@@ -1,0 +1,52 @@
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Mis Compras - BiomeMarket</title>
+    <link rel="stylesheet" href="{% static 'CSS/site.css' %}">
+    <link rel="stylesheet" href="{% static 'CSS/home.css' %}">
+</head>
+<body>
+    <div class="container" style="padding:2rem 0">
+        <h2>Mis compras</h2>
+        {% if compras %}
+            <div class="compras-list">
+                {% for venta in compras %}
+                    <div class="producto-card" style="padding:1rem;margin-bottom:1rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <strong>Compra #{{ venta.id }}</strong>
+                                <div style="color:#666">Fecha: {{ venta.fecha_venta }}</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-weight:700;color:#4CAF50">Total: ${{ venta.total }}</div>
+                                <div style="font-size:0.9rem;color:#666">Estado: {{ venta.estado }}</div>
+                            </div>
+                        </div>
+                        <hr style="margin:0.6rem 0">
+                        <div>
+                            <h4>Detalles</h4>
+                            <ul>
+                                {% for det in venta.detalles.all %}
+                                    <li style="margin-bottom:6px;">
+                                        <strong>{{ det.producto.nombre }}</strong> — {{ det.cantidad }} x ${{ det.precio_unitario }} = ${{ det.subtotal }}
+                                    </li>
+                                {% empty %}
+                                    <li>No hay detalles para esta compra.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-results">
+                <h3>No encontré compras</h3>
+                <p>Aún no has realizado compras. Explora nuestros productos y haz tu primer pedido.</p>
+                <a class="btn btn-primary" href="{% url 'productos:list_product' %}">Ver productos</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
