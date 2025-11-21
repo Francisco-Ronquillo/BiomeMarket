@@ -5,7 +5,7 @@ from .models import Producto
 CART_SESSION_ID = getattr(settings, 'CART_SESSION_ID', 'biomarket_carrito')
 CART_COUPON_KEY = CART_SESSION_ID + '_coupon'
 
-# Simple coupon definition: code -> percent discount
+
 DEFAULT_COUPONS = {
     'BIOME10': 10,
     'BIOME15': 15,
@@ -107,7 +107,20 @@ class Carrito:
         percent = DEFAULT_COUPONS.get(code)
         if not percent:
             return {'success': False, 'message': 'Código inválido'}
-        self.session[CART_COUPON_KEY] = {'code': code, 'percent': percent}
+        
+        try:
+            from .models import CouponUsage
+            usuario_id = self.session.get('usuario_id')
+            guest_email = self.session.get('guest_email')
+            if usuario_id and CouponUsage.objects.filter(codigo=code, usuario_id=usuario_id).exists():
+                return {'success': False, 'message': 'Ya usaste este cupón anteriormente.'}
+            if (not usuario_id) and guest_email and CouponUsage.objects.filter(codigo=code, guest_email=guest_email).exists():
+                return {'success': False, 'message': 'Este cupón ya fue utilizado con este correo.'}
+        except Exception:
+            
+            pass
+
+        self.session[CART_COUPON_KEY] = {'code': code, 'percent': percent, 'applied': True}
         self.session.modified = True
         return {'success': True, 'code': code, 'percent': percent}
 
@@ -117,7 +130,10 @@ class Carrito:
             self.session.modified = True
 
     def get_coupon(self):
-        return self.session.get(CART_COUPON_KEY)
+        c = self.session.get(CART_COUPON_KEY)
+        if isinstance(c, dict) and c.get('applied'):
+            return c
+        return None
 
     def get_item(self, product_id):
         item = self.carrito.get(str(product_id), {}).copy()
@@ -185,7 +201,6 @@ class Carrito:
         total = 0.0
         for item in self.get_cart_items():
             total += item['subtotal']
-        # aplicar descuento si existe cupon en sesión
         coupon = self.get_coupon()
         if coupon and isinstance(coupon, dict):
             try:

@@ -87,3 +87,18 @@ class Orden(models.Model):
 
     def __str__(self):
         return f'Orden {self.paypal_order_id} - {self.status} - {self.total} {self.currency}'
+
+
+class CouponUsage(models.Model):
+    """Registra el uso de un cupón por usuario o por email de invitado."""
+    codigo = models.CharField(max_length=50)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, null=True, blank=True)
+    guest_email = models.EmailField(null=True, blank=True)
+    usado_en = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = (('codigo', 'usuario'), ('codigo', 'guest_email'))
+
+    def __str__(self):
+        who = self.usuario.email if self.usuario else (self.guest_email or 'Anónimo')
+        return f'Cupón {self.codigo} usado por {who} en {self.usado_en}'

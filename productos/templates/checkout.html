@@ -5,47 +5,109 @@
     <meta charset="UTF-8">
     <title>Checkout - BiomeMarket</title>
     <link rel="stylesheet" href="{% static 'CSS/site.css' %}">
+    <link rel="stylesheet" href="{% static 'CSS/checkout.css' %}">
     <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
 <body>
 
-    <div class="checkout-container" style="max-width:900px;margin:2rem auto;padding:1rem">
-        <h1>Resumen de Compra</h1>
-        {% if cart_items %}
-            <ul style="list-style:none;padding:0;margin:0 0 1rem 0">
-            {% for it in cart_items %}
-                <li style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee">
-                    <div>
-                        <strong>{{ it.producto.nombre }}</strong>
-                        <div style="font-size:.9rem;color:#666">Cantidad: {{ it.cantidad }}</div>
+    <div class="checkout-page">
+        <div class="checkout-card">
+            {% if cart_items %}
+            <div class="checkout-left">
+                <h1>Resumen de Compra</h1>
+                {% for it in cart_items %}
+                <div class="item-row">
+                    <div class="item-left">
+                        {% if it.producto.imagen %}
+                            <img src="{{ it.producto.imagen.url }}" alt="{{ it.producto.nombre }}">
+                        {% else %}
+                            <img src="{% static 'img/default-producto.jpg' %}" alt="{{ it.producto.nombre }}">
+                        {% endif %}
+                        <div class="item-meta">
+                            <strong>{{ it.producto.nombre }}</strong>
+                            <div class="muted">Cantidad: {{ it.cantidad }} • Unit: ${{ it.precio_unitario|floatformat:2 }}</div>
+                        </div>
                     </div>
-                    <div style="text-align:right">
-                        <div>${{ it.subtotal|floatformat:2 }}</div>
-                        <div style="font-size:.85rem;color:#666">Unit: ${{ it.precio_unitario|floatformat:2 }}</div>
-                    </div>
-                </li>
-            {% endfor %}
-            </ul>
-            <div style="text-align:right;margin-top:12px;font-size:1.1rem">Total: <strong>${{ cart_total|floatformat:2 }}</strong></div>
-            <form method="post" action="{% url 'productos:paypal_redirect' %}" style="margin-top:18px">
-                {% csrf_token %}
-                <div style="margin:8px 0">
-                    <label for="coupon_code" style="display:block;margin-bottom:6px">Código de descuento (opcional)</label>
-                    <input id="coupon_code" name="coupon_code" type="text" placeholder="Introduce tu código" style="padding:8px;width:100%;max-width:360px;border:1px solid #ddd;border-radius:6px">
+                    <div class="item-price">${{ it.subtotal|floatformat:2 }}</div>
                 </div>
-                {% if not usuario_autenticado %}
-                    <div style="margin:8px 0">
-                        <label for="guest_email" style="display:block;margin-bottom:6px">Correo electrónico (recibirás la factura)</label>
-                        <input id="guest_email" name="guest_email" type="email" required style="padding:8px;width:100%;max-width:360px;border:1px solid #ddd;border-radius:6px">
+                {% endfor %}
+            </div>
+            <aside class="checkout-right">
+                <div class="summary-title">Resumen de Orden</div>
+                <div class="summary-row"><span>Subtotal:</span><span id="checkoutSubtotal">${{ cart_subtotal|floatformat:2 }}</span></div>
+                <div class="summary-row"><span>Envío:</span><span class="free">Gratis (Ecuador)</span></div>
+                <div class="summary-row">
+                    <span>Código de Descuento:</span>
+                    <div class="promo-input">
+                        <input type="text" placeholder="Ingresa código (ej. BIOME10)" id="promoCode">
+                        <button type="button" id="applyPromoBtn">Aplicar</button>
                     </div>
+                </div>
+                {% if cart_coupon %}
+                    <div class="coupon-info">Cupón aplicado: <strong>{{ cart_coupon }}</strong> — Descuento: ${{ cart_discount|floatformat:2 }}</div>
                 {% endif %}
-                <button type="submit" class="btn" style="background:#0070ba;color:#fff;padding:10px 16px;border-radius:8px;border:none;cursor:pointer">Pagar con PayPal</button>
-                <a href="{% url 'productos:carrito' %}" class="btn" style="margin-left:8px;padding:10px 16px;border-radius:8px;border:1px solid #ddd;">Volver al carrito</a>
-            </form>
-            
-        {% else %}
-            <p>Tu carrito está vacío. <a href="{% url 'productos:home' %}">Volver al inicio</a></p>
-        {% endif %}
+                <div class="total-amount">Total: <div id="checkoutTotal" style="display:inline-block;margin-left:12px">${{ cart_total|floatformat:2 }}</div></div>
+
+                <form method="post" action="{% url 'productos:paypal_redirect' %}" style="margin-top:18px">
+                    {% csrf_token %}
+                    {% if not usuario_autenticado %}
+                        <div style="margin:8px 0">
+                            <label for="guest_email" style="display:block;margin-bottom:6px">Correo electrónico (recibirás la factura)</label>
+                            <input id="guest_email" name="guest_email" type="email" required style="padding:8px;width:100%;max-width:360px;border:1px solid #ddd;border-radius:6px">
+                        </div>
+                    {% endif %}
+                    <div style="display:flex;gap:10px;margin-top:12px">
+                        <button type="submit" class="btn-pay">Pagar con PayPal</button>
+                        <a href="{% url 'productos:carrito' %}" class="btn-secondary">Volver al carrito</a>
+                    </div>
+                </form>
+
+                <div id="couponMessage" class="coupon-info"></div>
+            </aside>
+            {% else %}
+                <div style="padding:36px">Tu carrito está vacío. <a href="{% url 'productos:home' %}">Volver al inicio</a></div>
+            {% endif %}
+        </div>
     </div>
+    <script>
+        (function(){
+            function getCookie(name) {
+                const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+                return v ? v.pop() : '';
+            }
+
+            const applyBtn = document.getElementById('applyPromoBtn');
+            const couponInput = document.getElementById('promoCode');
+            const msgEl = document.getElementById('couponMessage');
+            const totalEl = document.getElementById('checkoutTotal');
+
+            function showMsg(t, ok=true){ if(msgEl){ msgEl.textContent = t; msgEl.style.color = ok ? 'green' : '#b00020'; } }
+
+            if(applyBtn && couponInput){
+                applyBtn.addEventListener('click', async function(){
+                    const code = (couponInput.value||'').trim();
+                    if(!code){ showMsg('Introduce un código para aplicar.', false); return; }
+                    try{
+                        const form = new FormData();
+                        form.append('accion','promo');
+                        form.append('codigo', code);
+                        form.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+                        const res = await fetch('{% url "productos:carrito_ajax" %}', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            body: form
+                        });
+                        const data = await res.json();
+                        if(data.success){
+                            showMsg(data.message || 'Cupón aplicado.');
+                            if(totalEl) totalEl.textContent = '$' + (data.total || data.subtotal || 0).toFixed(2);
+                        } else {
+                            showMsg(data.error || 'Código inválido.', false);
+                        }
+                    }catch(err){ console.error(err); showMsg('Error aplicando cupón.', false); }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>

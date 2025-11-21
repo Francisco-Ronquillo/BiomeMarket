@@ -6,21 +6,49 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Orden Confirmada</title>
 <link rel="stylesheet" href="{% static 'CSS/site.css' %}">
+<link rel="stylesheet" href="{% static 'CSS/orden_confirmada.css' %}">
 </head>
 <body>
-<div class="container" style="max-width:800px;margin:2rem auto;padding:1rem">
-    <h1>Pago recibido</h1>
-    {% if orden %}
-    <p>Gracias por tu compra. Orden: <strong>{{ orden.paypal_order_id }}</strong></p>
-    <p>Monto: <strong>${{ orden.total }} {{ orden.currency }}</strong></p>
-    <p>Estado: <strong>{{ orden.status }}</strong></p>
-    <p>Fecha: <strong>{{ orden.created_at }}</strong></p>
-    <pre style="background:#f7f7f7;padding:8px;border-radius:6px;overflow:auto;max-height:240px">{{ orden.raw_response|json_script:"orden_raw" }}</pre>
-    <a href="{% url 'productos:home' %}" class="btn">Volver al inicio</a>
-    {% else %}
-    <p>No se encontró la orden.</p>
-    <a href="{% url 'productos:home' %}" class="btn">Volver al inicio</a>
-    {% endif %}
+<div class="confirm-container">
+    <div class="confirm-card">
+        {% if orden %}
+            <div class="confirm-hero">
+                <div class="icon">✓</div>
+                <div>
+                    <h1>Pago recibido</h1>
+                    <div class="muted">Gracias por tu compra. Aquí tienes el resumen de tu orden.</div>
+                </div>
+            </div>
+
+            <div class="confirm-details">
+                <div class="detail-row"><span>Orden</span><strong>{{ orden.paypal_order_id }}</strong></div>
+                <div class="detail-row"><span>Monto</span><strong>${{ orden.total }} {{ orden.currency }}</strong></div>
+                <div class="detail-row"><span>Estado</span><strong>{{ orden.status }}</strong></div>
+                <div class="detail-row"><span>Fecha</span><strong>{{ orden.created_at }}</strong></div>
+
+                {% if orden.raw_response %}
+                    <div style="margin-top:10px;font-size:.95rem;color:var(--muted)">Respuesta cruda (para soporte):</div>
+                    <pre class="raw-json">{{ orden.raw_response|json_script:"orden_raw" }}</pre>
+                {% endif %}
+
+                <div class="actions">
+                    <a href="{% url 'productos:home' %}" class="btn-primary">Volver al inicio</a>
+                    <a href="{% url 'productos:list_product' %}" class="btn-light">Seguir comprando</a>
+                </div>
+            </div>
+        {% else %}
+            <div class="confirm-hero">
+                <div class="icon">ℹ</div>
+                <div>
+                    <h1>Orden no encontrada</h1>
+                    <div class="muted">No se encontró la orden solicitada. Puedes volver al inicio.</div>
+                </div>
+            </div>
+            <div class="actions" style="margin-top:16px">
+                <a href="{% url 'productos:home' %}" class="btn-primary">Volver al inicio</a>
+            </div>
+        {% endif %}
+    </div>
 </div>
 </body>
 </html>
