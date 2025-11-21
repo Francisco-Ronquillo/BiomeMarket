@@ -3,6 +3,13 @@ from django.conf import settings
 from .models import Producto
 
 CART_SESSION_ID = getattr(settings, 'CART_SESSION_ID', 'biomarket_carrito')
+CART_COUPON_KEY = CART_SESSION_ID + '_coupon'
+
+# Simple coupon definition: code -> percent discount
+DEFAULT_COUPONS = {
+    'BIOME10': 10,
+    'BIOME15': 15,
+}
 
 class Carrito:
     def __init__(self, request):
@@ -92,6 +99,26 @@ class Carrito:
         self.carrito = {}
         self.session.modified = True
 
+    def apply_coupon(self, code: str):
+        """Apply a coupon code if valid. Returns dict with result."""
+        if not code:
+            return {'success': False, 'message': 'Código vacío'}
+        code = code.strip().upper()
+        percent = DEFAULT_COUPONS.get(code)
+        if not percent:
+            return {'success': False, 'message': 'Código inválido'}
+        self.session[CART_COUPON_KEY] = {'code': code, 'percent': percent}
+        self.session.modified = True
+        return {'success': True, 'code': code, 'percent': percent}
+
+    def remove_coupon(self):
+        if CART_COUPON_KEY in self.session:
+            del self.session[CART_COUPON_KEY]
+            self.session.modified = True
+
+    def get_coupon(self):
+        return self.session.get(CART_COUPON_KEY)
+
     def get_item(self, product_id):
         item = self.carrito.get(str(product_id), {}).copy()
         if item:
@@ -158,6 +185,16 @@ class Carrito:
         total = 0.0
         for item in self.get_cart_items():
             total += item['subtotal']
+        # aplicar descuento si existe cupon en sesión
+        coupon = self.get_coupon()
+        if coupon and isinstance(coupon, dict):
+            try:
+                percent = float(coupon.get('percent', 0))
+                if percent > 0:
+                    discounted = total * (1.0 - (percent / 100.0))
+                    return round(discounted, 2)
+            except Exception:
+                pass
         return round(total, 2)
 
     def items_unicos(self):

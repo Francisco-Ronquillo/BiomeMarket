@@ -29,6 +29,10 @@
             <div style="text-align:right;margin-top:12px;font-size:1.1rem">Total: <strong>${{ cart_total|floatformat:2 }}</strong></div>
             <form method="post" action="{% url 'productos:paypal_redirect' %}" style="margin-top:18px">
                 {% csrf_token %}
+                <div style="margin:8px 0">
+                    <label for="coupon_code" style="display:block;margin-bottom:6px">Código de descuento (opcional)</label>
+                    <input id="coupon_code" name="coupon_code" type="text" placeholder="Introduce tu código" style="padding:8px;width:100%;max-width:360px;border:1px solid #ddd;border-radius:6px">
+                </div>
                 {% if not usuario_autenticado %}
                     <div style="margin:8px 0">
                         <label for="guest_email" style="display:block;margin-bottom:6px">Correo electrónico (recibirás la factura)</label>

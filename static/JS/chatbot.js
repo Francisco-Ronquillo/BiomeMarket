@@ -287,7 +287,19 @@
 
   // (Se eliminó el botón 'Carrito' del header; la acción para abrir carrito se mantiene en las opciones inferiores)
 
-  // Mensaje inicial: listar opciones numeradas para que el usuario escriba su elección
-  appendMessage('¡Hola! Bienvenido a BiomeMarket — elige una opción para comenzar:<br><br>1) Buscar productos<br>2) Populares<br>3) Ofertas<br>4) Ver carrito<br><br>Escribe el número de la opción o escribe el nombre (ej. "1" o "buscar").', 'bot');
+  // Si no está autenticado, no mostrar las opciones iniciales.
+  try{
+    if(!isAuthenticated()){
+      // deshabilitar entrada y botón de enviar al cargar
+      if(input){ input.disabled = true; input.placeholder = 'Inicia sesión para usar el asistente'; }
+      if(send) send.disabled = true;
+      appendMessage('¡Hola! Bienvenido a BiomeMarket. Inicia sesión para usar el asistente del chat.', 'bot');
+      showAuthRequired();
+    } else {
+      appendMessage('¡Hola! Bienvenido a BiomeMarket — elige una opción para comenzar:<br><br>1) Buscar productos<br>2) Populares<br>3) Ofertas<br>4) Ver carrito<br><br>Escribe el número de la opción o escribe el nombre (ej. "1" o "buscar").', 'bot');
+    }
+  }catch(e){
+    appendMessage('¡Hola! Bienvenido a BiomeMarket — elige una opción para comenzar:<br><br>1) Buscar productos<br>2) Populares<br>3) Ofertas<br>4) Ver carrito<br><br>Escribe el número de la opción o escribe el nombre (ej. "1" o "buscar").', 'bot');
+  }
 
 })();

@@ -139,12 +139,17 @@ class CartAjaxView(View):
                 response_data['success'] = True
                 response_data['message'] = 'Producto removido del carrito.'
             elif action == 'promo':
-                if codigo == 'BIOME10':
+                # aplicar cupon persistente en sesión mediante Carrito
+                result = {}
+                try:
+                    result = carrito.apply_coupon(codigo)
+                except Exception:
+                    result = {'success': False, 'message': 'Error aplicando cupón'}
+                if result.get('success'):
                     response_data['success'] = True
-                    response_data['total'] = response_data['subtotal'] * 0.9
-                    response_data['message'] = '¡10% de descuento aplicado!'
+                    response_data['message'] = f"{result.get('percent')}% de descuento aplicado."
                 else:
-                    response_data['error'] = 'Código inválido o expirado.'
+                    response_data['error'] = result.get('message', 'Código inválido o expirado.')
             else:
                 response_data['error'] = 'Acción no válida.'
 
@@ -374,9 +379,23 @@ class PayPalCreateOrder(View):
     def post(self, request):
         try:
             carrito = Carrito(request)
+            # aplicar cupón si se envía por AJAX
+            coupon_code = request.POST.get('coupon_code') or (json.loads(request.body.decode('utf-8') or '{}').get('coupon_code') if request.body else None)
+            if coupon_code:
+                try:
+                    carrito.apply_coupon(coupon_code)
+                except Exception:
+                    pass
             total = float(carrito.total_precio())
             # si el checkout fue hecho por invitado, capturamos su email y lo guardamos en sesión
             guest_email = request.POST.get('guest_email') or request.POST.get('email')
+            # aplicar cupón si fue enviado desde el formulario de checkout
+            coupon_code = request.POST.get('coupon_code') or request.POST.get('codigo')
+            if coupon_code:
+                try:
+                    carrito.apply_coupon(coupon_code)
+                except Exception:
+                    pass
             if guest_email:
                 request.session['guest_email'] = guest_email
             token = _get_paypal_token()
